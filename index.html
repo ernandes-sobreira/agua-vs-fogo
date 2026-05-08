@@ -1,254 +1,776 @@
 <!DOCTYPE html>
-<html lang="pt">
+<html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Personagem Apagando o Fogo no Pantanal</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#1a4d2e">
+  <title>Água vs Fogo - Salve o Pantanal</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap" rel="stylesheet">
   <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; user-select: none; }
+    html, body {
+      height: 100%;
+      overflow: hidden;
+      font-family: 'Fredoka', system-ui, sans-serif;
+      background: linear-gradient(180deg, #2d5016 0%, #1a4d2e 100%);
+      color: #fff;
+    }
     body {
       display: flex;
       flex-direction: column;
       align-items: center;
-      margin: 0;
-      background-color: #e0c49b;
+      justify-content: flex-start;
+      min-height: 100vh;
+      padding: 8px;
+      touch-action: manipulation;
     }
-    #gameArea {
-      position: relative;
-      width: 100vw;
-      height: 100vw;
-      max-width: 400px;
-      max-height: 400px;
-      background: #d2b48c;
-      border: 2px solid #333;
-      overflow: hidden;
-    }
-    .player, .fire, .tree, .smoke, .chasing-fire {
-      position: absolute;
-      font-size: 6vw;
-    }
-    .fire, .tree, .chasing-fire { font-size: 6vw; }
-    .smoke {
-      font-size: 8vw;
-      opacity: 0.5;
-      animation: smokeMove 5s linear infinite;
-    }
-    @keyframes smokeMove {
-      0% { left: -20vw; }
-      100% { left: 100vw; }
-    }
-    #scoreBoard {
+
+    .screen {
+      position: fixed;
+      inset: 0;
+      background: linear-gradient(180deg, rgba(15,38,20,0.97) 0%, rgba(26,77,46,0.97) 100%);
       display: flex;
-      justify-content: space-between;
-      width: 90vw;
-      max-width: 400px;
-      margin-top: 5px;
-      font-size: 5vw;
-    }
-    .controls {
-      display: flex;
+      flex-direction: column;
+      align-items: center;
       justify-content: center;
-      flex-wrap: wrap;
-      width: 90vw;
-      max-width: 400px;
+      padding: 20px;
+      z-index: 100;
+      overflow-y: auto;
     }
-    .control-button {
-      width: 18vw;
-      height: 18vw;
-      font-size: 6vw;
-      margin: 2vw;
+    .screen.hidden { display: none; }
+
+    .logo {
+      font-size: clamp(32px, 8vw, 48px);
+      font-weight: 700;
       text-align: center;
-      border-radius: 10px;
-      background-color: #d3d3d3;
+      margin-bottom: 8px;
+      text-shadow: 0 4px 12px rgba(0,0,0,0.5);
+      background: linear-gradient(180deg, #ffd54a 0%, #ff7043 60%, #c62828 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .subtitle {
+      font-size: clamp(13px, 3.5vw, 16px);
+      opacity: 0.85;
+      margin-bottom: 24px;
+      text-align: center;
+      max-width: 320px;
+    }
+    .panel {
+      background: rgba(255,255,255,0.08);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 16px;
+      padding: 20px;
+      width: 100%;
+      max-width: 360px;
+      margin-bottom: 12px;
+    }
+    .panel h2 {
+      font-size: 18px;
+      margin-bottom: 12px;
+      text-align: center;
+      color: #ffd54a;
+    }
+
+    input[type="text"] {
+      width: 100%;
+      padding: 14px 16px;
+      font-size: 16px;
+      font-family: inherit;
+      border: 2px solid rgba(255,255,255,0.2);
+      background: rgba(0,0,0,0.3);
+      color: #fff;
+      border-radius: 12px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    input[type="text"]:focus { border-color: #ffd54a; }
+    input[type="text"]::placeholder { color: rgba(255,255,255,0.4); }
+
+    .btn {
       display: flex;
       align-items: center;
       justify-content: center;
+      gap: 8px;
+      width: 100%;
+      max-width: 360px;
+      padding: 16px 20px;
+      font-size: 18px;
+      font-weight: 600;
+      font-family: inherit;
+      border: none;
+      border-radius: 14px;
+      cursor: pointer;
+      transition: transform 0.1s, box-shadow 0.2s;
+      margin-bottom: 10px;
+      box-shadow: 0 4px 0 rgba(0,0,0,0.25);
+    }
+    .btn:active { transform: translateY(2px); box-shadow: 0 2px 0 rgba(0,0,0,0.25); }
+    .btn-primary {
+      background: linear-gradient(180deg, #ff8a3d 0%, #e65100 100%);
+      color: #fff;
+    }
+    .btn-secondary {
+      background: linear-gradient(180deg, #4fc3f7 0%, #0288d1 100%);
+      color: #fff;
+    }
+    .btn-ghost {
+      background: rgba(255,255,255,0.1);
+      color: #fff;
+      border: 1px solid rgba(255,255,255,0.2);
+    }
+
+    .ranking-list { list-style: none; }
+    .ranking-list li {
+      display: grid;
+      grid-template-columns: 36px 1fr auto;
+      gap: 10px;
+      align-items: center;
+      padding: 10px 12px;
+      margin-bottom: 6px;
+      background: rgba(0,0,0,0.2);
+      border-radius: 10px;
+      font-size: 15px;
+    }
+    .ranking-list li.me { background: rgba(255,213,74,0.2); border: 1px solid #ffd54a; }
+    .ranking-list .pos { font-weight: 700; color: #ffd54a; text-align: center; }
+    .ranking-list .name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .ranking-list .score { font-weight: 700; }
+    .ranking-list .empty { text-align: center; opacity: 0.5; padding: 20px; display: block; grid-template-columns: none; }
+
+    #hud {
+      width: 100%;
+      max-width: 420px;
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+    .hud-card {
+      background: rgba(0,0,0,0.35);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 10px;
+      padding: 8px 6px;
+      text-align: center;
+    }
+    .hud-label {
+      font-size: 11px;
+      opacity: 0.7;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .hud-value {
+      font-size: 22px;
+      font-weight: 700;
+      color: #ffd54a;
+    }
+    .hud-value.danger { color: #ff5252; animation: blink 0.6s infinite; }
+    @keyframes blink { 50% { opacity: 0.5; } }
+
+    #gameArea {
+      position: relative;
+      width: 100%;
+      max-width: 420px;
+      aspect-ratio: 1 / 1;
+      background:
+        radial-gradient(ellipse at 30% 20%, #6b8e23 0%, transparent 50%),
+        radial-gradient(ellipse at 70% 80%, #8b6914 0%, transparent 50%),
+        linear-gradient(135deg, #c2a878 0%, #a0825c 100%);
+      border: 3px solid #2d5016;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.4), inset 0 0 60px rgba(0,0,0,0.2);
+      touch-action: none;
+    }
+    #gameArea.apocalypse {
+      background:
+        radial-gradient(ellipse at 30% 20%, #4a1c0d 0%, transparent 50%),
+        radial-gradient(ellipse at 70% 80%, #2d0a05 0%, transparent 50%),
+        linear-gradient(135deg, #6b2810 0%, #3d1605 100%);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.6), inset 0 0 80px rgba(255,87,34,0.4);
+    }
+    #gameArea.shake { animation: shake 0.3s; }
+    @keyframes shake {
+      0%, 100% { transform: translate(0,0); }
+      20% { transform: translate(-4px, 2px); }
+      40% { transform: translate(4px, -2px); }
+      60% { transform: translate(-3px, -3px); }
+      80% { transform: translate(3px, 3px); }
+    }
+
+    .entity {
+      position: absolute;
+      font-size: 28px;
+      line-height: 1;
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+      filter: drop-shadow(0 2px 2px rgba(0,0,0,0.4));
+    }
+    .player { font-size: 32px; z-index: 10; }
+    .fire { animation: flicker 0.4s infinite alternate; }
+    .chaser { filter: drop-shadow(0 0 6px #ff1744); z-index: 5; }
+    @keyframes flicker {
+      from { transform: translate(-50%, -50%) scale(1); }
+      to { transform: translate(-50%, -50%) scale(1.15); }
+    }
+    .extinguished { animation: poof 0.4s forwards; }
+    @keyframes poof {
+      to { transform: translate(-50%, -50%) scale(2); opacity: 0; }
+    }
+    .splash {
+      position: absolute;
+      pointer-events: none;
+      transform: translate(-50%, -50%);
+      font-size: 24px;
+      animation: splash 0.5s forwards;
+    }
+    @keyframes splash {
+      0% { opacity: 1; transform: translate(-50%, -50%) scale(0.5); }
+      100% { opacity: 0; transform: translate(-50%, -50%) scale(2); }
+    }
+
+    #controls {
+      width: 100%;
+      max-width: 420px;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
+      margin-top: 12px;
+    }
+    .ctrl {
+      aspect-ratio: 1.4 / 1;
+      background: linear-gradient(180deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.05) 100%);
+      border: 2px solid rgba(255,255,255,0.2);
+      border-radius: 12px;
+      color: #fff;
+      font-size: 28px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.1s, background 0.1s;
+      font-family: inherit;
+    }
+    .ctrl:active, .ctrl.active {
+      background: rgba(255,213,74,0.3);
+      transform: scale(0.95);
+    }
+    .ctrl.empty { visibility: hidden; }
+
+    .banner {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: linear-gradient(135deg, #c62828, #e65100);
+      padding: 24px 36px;
+      border-radius: 18px;
+      font-size: 26px;
+      font-weight: 700;
+      box-shadow: 0 12px 40px rgba(0,0,0,0.5);
+      z-index: 200;
+      text-align: center;
+      animation: bannerPop 2s forwards;
+      pointer-events: none;
+    }
+    .banner small { display: block; font-size: 13px; opacity: 0.9; margin-top: 4px; font-weight: 400; }
+    @keyframes bannerPop {
+      0% { opacity: 0; transform: translate(-50%, -50%) scale(0.5); }
+      15%, 85% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+      100% { opacity: 0; transform: translate(-50%, -50%) scale(1.2); }
+    }
+
+    .game-over-score {
+      font-size: 56px;
+      font-weight: 700;
+      color: #ffd54a;
+      text-align: center;
+      margin: 8px 0;
+    }
+    .game-over-label {
+      text-align: center;
+      opacity: 0.8;
+      margin-bottom: 4px;
+      font-size: 14px;
+    }
+    .new-record {
+      text-align: center;
+      color: #ffd54a;
+      font-weight: 700;
+      font-size: 22px;
+      margin-bottom: 12px;
+      animation: pulse 1s infinite;
+    }
+    .new-record.hidden { display: none; }
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.08); }
+    }
+
+    @media (max-width: 360px) {
+      .entity { font-size: 22px; }
+      .player { font-size: 26px; }
+      .ctrl { font-size: 24px; }
     }
   </style>
 </head>
 <body>
-  <div id="gameArea">
-    <div id="player" class="player">👩‍🚒💧</div>
-    <div id="chasingFire" class="chasing-fire" style="top: 85%; left: 85%;">🔥</div>
-    
-    <!-- Adicionando 20 focos de incêndio -->
-    <div class="fire" style="top: 10%; left: 10%;">🔥</div>
-    <div class="fire" style="top: 15%; left: 70%;">🔥</div>
-    <div class="fire" style="top: 20%; left: 40%;">🔥</div>
-    <div class="fire" style="top: 25%; left: 20%;">🔥</div>
-    <div class="fire" style="top: 30%; left: 60%;">🔥</div>
-    <div class="fire" style="top: 35%; left: 80%;">🔥</div>
-    <div class="fire" style="top: 40%; left: 30%;">🔥</div>
-    <div class="fire" style="top: 45%; left: 50%;">🔥</div>
-    <div class="fire" style="top: 50%; left: 70%;">🔥</div>
-    <div class="fire" style="top: 55%; left: 10%;">🔥</div>
-    <div class="fire" style="top: 60%; left: 90%;">🔥</div>
-    <div class="fire" style="top: 65%; left: 20%;">🔥</div>
-    <div class="fire" style="top: 70%; left: 40%;">🔥</div>
-    <div class="fire" style="top: 75%; left: 60%;">🔥</div>
-    <div class="fire" style="top: 80%; left: 50%;">🔥</div>
-    <div class="fire" style="top: 85%; left: 30%;">🔥</div>
-    <div class="fire" style="top: 90%; left: 70%;">🔥</div>
-    <div class="fire" style="top: 20%; left: 90%;">🔥</div>
-    <div class="fire" style="top: 10%; left: 30%;">🔥</div>
-    <div class="fire" style="top: 5%; left: 50%;">🔥</div>
-    
-    <!-- Adicionando 20 árvores como barreiras -->
-    <div class="tree" style="top: 20%; left: 10%;">🌳</div>
-    <div class="tree" style="top: 30%; left: 20%;">🌳</div>
-    <div class="tree" style="top: 40%; left: 40%;">🌳</div>
-    <div class="tree" style="top: 50%; left: 30%;">🌳</div>
-    <div class="tree" style="top: 60%; left: 50%;">🌳</div>
-    <div class="tree" style="top: 70%; left: 60%;">🌳</div>
-    <div class="tree" style="top: 80%; left: 20%;">🌳</div>
-    <div class="tree" style="top: 15%; left: 15%;">🌳</div>
-    <div class="tree" style="top: 25%; left: 35%;">🌳</div>
-    <div class="tree" style="top: 35%; left: 75%;">🌳</div>
-    <div class="tree" style="top: 45%; left: 85%;">🌳</div>
-    <div class="tree" style="top: 55%; left: 45%;">🌳</div>
-    <div class="tree" style="top: 65%; left: 55%;">🌳</div>
-    <div class="tree" style="top: 75%; left: 15%;">🌳</div>
-    <div class="tree" style="top: 85%; left: 25%;">🌳</div>
-    <div class="tree" style="top: 5%; left: 5%;">🌳</div>
-    <div class="tree" style="top: 25%; left: 90%;">🌳</div>
-    <div class="tree" style="top: 35%; left: 20%;">🌳</div>
-    <div class="tree" style="top: 65%; left: 75%;">🌳</div>
-    <div class="tree" style="top: 15%; left: 70%;">🌳</div>
 
-    <!-- Nuvens de fumaça -->
-    <div class="smoke" style="top: 5%; left: -20vw; animation-delay: 0s;">💨</div>
-    <div class="smoke" style="top: 30%; left: -20vw; animation-delay: 1s;">💨</div>
-    <div class="smoke" style="top: 60%; left: -20vw; animation-delay: 2s;">💨</div>
+  <div id="startScreen" class="screen">
+    <div class="logo">💧 Água vs Fogo 🔥</div>
+    <p class="subtitle">Salve o Pantanal apagando os focos de incêndio antes que tudo queime!</p>
+    <div class="panel">
+      <h2>Seu nome</h2>
+      <input type="text" id="playerName" maxlength="14" placeholder="Digite seu nome" autocomplete="off">
+    </div>
+    <button class="btn btn-primary" id="btnStart">▶ Jogar</button>
+    <button class="btn btn-secondary" id="btnRanking">🏆 Ver Ranking</button>
+    <button class="btn btn-ghost" id="btnHowTo">❓ Como Jogar</button>
   </div>
-  <div id="scoreBoard">
-    <div id="score">Chamas Apagadas: 0</div>
-    <div id="timer">Tempo: 30s</div>
+
+  <div id="rankingScreen" class="screen hidden">
+    <div class="logo">🏆 Ranking</div>
+    <p class="subtitle">Top 10 melhores defensores do Pantanal</p>
+    <div class="panel">
+      <ol class="ranking-list" id="rankingList"></ol>
+    </div>
+    <button class="btn btn-ghost" id="btnRankingBack">← Voltar</button>
+    <button class="btn btn-ghost" id="btnClearRanking" style="font-size:14px;padding:10px;">Limpar Ranking</button>
   </div>
-  <div class="controls">
-    <button class="control-button" id="upButton">⬆️</button>
+
+  <div id="howToScreen" class="screen hidden">
+    <div class="logo">❓ Como Jogar</div>
+    <div class="panel" style="text-align:left; line-height:1.7;">
+      <p><strong>🎯 Objetivo:</strong> apague o máximo de focos de incêndio 🔥</p>
+      <br>
+      <p><strong>🎮 Controles:</strong> use os botões de seta, teclado (WASD/setas) ou deslize o dedo na tela.</p>
+      <br>
+      <p><strong>⏱️ Fase 1 (30s):</strong> apague todas as chamas e fuja do fogo perseguidor 👹</p>
+      <br>
+      <p><strong>🌋 Apocalipse:</strong> ondas infinitas, cada vez mais rápidas e com mais fogo. Sobreviva o máximo possível!</p>
+      <br>
+      <p><strong>💡 Dica:</strong> use as árvores como referência e fique sempre em movimento!</p>
+    </div>
+    <button class="btn btn-primary" id="btnHowToBack">Entendi!</button>
   </div>
-  <div class="controls">
-    <button class="control-button" id="leftButton">⬅️</button>
-    <button class="control-button" id="downButton">⬇️</button>
-    <button class="control-button" id="rightButton">➡️</button>
+
+  <div id="gameOverScreen" class="screen hidden">
+    <div class="logo" id="gameOverTitle">Fim de Jogo</div>
+    <div id="newRecordMsg" class="new-record hidden">🎉 NOVO RECORDE! 🎉</div>
+    <div class="panel">
+      <div class="game-over-label">Sua pontuação</div>
+      <div class="game-over-score" id="finalScore">0</div>
+      <div class="game-over-label" id="rankPosition"></div>
+    </div>
+    <button class="btn btn-primary" id="btnPlayAgain">🔄 Jogar Novamente</button>
+    <button class="btn btn-secondary" id="btnShareScore">📤 Compartilhar</button>
+    <button class="btn btn-ghost" id="btnGoRanking">🏆 Ver Ranking</button>
+    <button class="btn btn-ghost" id="btnGoHome">🏠 Menu</button>
+  </div>
+
+  <div id="hud">
+    <div class="hud-card"><div class="hud-label">Fase</div><div class="hud-value" id="phaseLabel">1</div></div>
+    <div class="hud-card"><div class="hud-label">Chamas</div><div class="hud-value" id="scoreLabel">0</div></div>
+    <div class="hud-card"><div class="hud-label">Tempo</div><div class="hud-value" id="timeLabel">30</div></div>
+  </div>
+
+  <div id="gameArea"></div>
+
+  <div id="controls">
+    <button class="ctrl empty"></button>
+    <button class="ctrl" data-dir="up">⬆️</button>
+    <button class="ctrl empty"></button>
+    <button class="ctrl" data-dir="left">⬅️</button>
+    <button class="ctrl" data-dir="down">⬇️</button>
+    <button class="ctrl" data-dir="right">➡️</button>
   </div>
 
   <script>
-    const player = document.getElementById("player");
-    const fires = document.querySelectorAll(".fire");
-    const chasingFire = document.getElementById("chasingFire");
-    const scoreDisplay = document.getElementById("score");
-    const timerDisplay = document.getElementById("timer");
-    let score = 0;
-    let timeLeft = 30;
-    let gameInterval;
+  (() => {
+    'use strict';
+    const RANKING_KEY = 'aguaVsFogo.ranking.v1';
+    const NAME_KEY = 'aguaVsFogo.name';
+    const MAX_RANK = 10;
 
-    let playerX = 0;
-    let playerY = 0;
-    let chasingFireX = 85;
-    let chasingFireY = 85;
-    const chasingFireSpeed = 0.5; // Velocidade do fogo perseguidor
+    const state = {
+      playerName: '', phase: 1, wave: 1, score: 0, timeLeft: 30, running: false,
+      player: { x: 50, y: 50, r: 4, el: null },
+      fires: [], chasers: [],
+      held: { up: false, down: false, left: false, right: false },
+      gameTimer: null, raf: null, lastTick: 0, audioCtx: null, transitioning: false,
+    };
 
-    function movePlayer(direction) {
-      const moveAmount = 5;
-      if (direction === "ArrowUp" && playerY > 0) playerY -= moveAmount;
-      if (direction === "ArrowDown" && playerY < 85) playerY += moveAmount;
-      if (direction === "ArrowLeft" && playerX > 0) playerX -= moveAmount;
-      if (direction === "ArrowRight" && playerX < 85) playerX += moveAmount;
-      player.style.top = `${playerY}vw`;
-      player.style.left = `${playerX}vw`;
-      checkFireCollision();
+    const $ = id => document.getElementById(id);
+    const gameArea = $('gameArea');
+    const phaseLabel = $('phaseLabel');
+    const scoreLabel = $('scoreLabel');
+    const timeLabel = $('timeLabel');
+
+    function beep(freq, dur = 0.1, type = 'sine', vol = 0.15) {
+      try {
+        if (!state.audioCtx) state.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const ctx = state.audioCtx;
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = type;
+        osc.frequency.value = freq;
+        gain.gain.value = vol;
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + dur);
+        osc.connect(gain).connect(ctx.destination);
+        osc.start();
+        osc.stop(ctx.currentTime + dur);
+      } catch (e) {}
     }
 
-    function checkFireCollision() {
-      let allFiresOut = true;
-      fires.forEach((fire) => {
-        const playerRect = player.getBoundingClientRect();
-        const fireRect = fire.getBoundingClientRect();
+    const rand = (min, max) => Math.random() * (max - min) + min;
+    const dist2 = (a, b) => (a.x - b.x) ** 2 + (a.y - b.y) ** 2;
 
-        if (
-          playerRect.x < fireRect.x + fireRect.width &&
-          playerRect.x + playerRect.width > fireRect.x &&
-          playerRect.y < fireRect.y + fireRect.height &&
-          playerRect.y + playerRect.height > fireRect.y &&
-          fire.style.display !== "none"
-        ) {
-          fire.style.display = "none";
-          score++;
-          scoreDisplay.textContent = `Chamas Apagadas: ${score}`;
-        }
-        if (fire.style.display !== "none") {
-          allFiresOut = false;
-        }
-      });
+    function makeEntity(emoji, x, y, extraClass = '') {
+      const el = document.createElement('div');
+      el.className = `entity ${extraClass}`.trim();
+      el.textContent = emoji;
+      el.style.left = x + '%';
+      el.style.top = y + '%';
+      gameArea.appendChild(el);
+      return el;
+    }
+    function placeEntity(el, x, y) { el.style.left = x + '%'; el.style.top = y + '%'; }
+    function showBanner(text, sub = '') {
+      const b = document.createElement('div');
+      b.className = 'banner';
+      b.innerHTML = `${text}${sub ? `<small>${sub}</small>` : ''}`;
+      document.body.appendChild(b);
+      setTimeout(() => b.remove(), 2000);
+    }
+    function shakeScreen() {
+      gameArea.classList.add('shake');
+      setTimeout(() => gameArea.classList.remove('shake'), 300);
+    }
 
-      if (allFiresOut) {
-        endGame("VOCÊ VENCEU! Parabéns!");
+    function clearArena() { gameArea.innerHTML = ''; state.fires = []; state.chasers = []; }
+    function spawnPlayer() {
+      state.player.x = 10; state.player.y = 10;
+      state.player.el = makeEntity('👩‍🚒', 10, 10, 'player');
+    }
+    function spawnFire(x, y) {
+      const f = { x, y, r: 4, el: makeEntity('🔥', x, y, 'fire'), out: false };
+      state.fires.push(f); return f;
+    }
+    function spawnChaser(x, y, speed) {
+      const c = { x, y, r: 4, speed, el: makeEntity('👹', x, y, 'chaser') };
+      state.chasers.push(c); return c;
+    }
+    function spawnTrees(n) {
+      for (let i = 0; i < n; i++) makeEntity('🌳', rand(5, 95), rand(5, 95));
+    }
+
+    function setupPhase1() {
+      clearArena();
+      gameArea.classList.remove('apocalypse');
+      spawnTrees(15);
+      spawnPlayer();
+      for (let i = 0; i < 18; i++) {
+        let x, y;
+        do { x = rand(8, 95); y = rand(8, 95); } while (x < 25 && y < 25);
+        spawnFire(x, y);
       }
+      spawnChaser(90, 90, 0.4);
+      state.timeLeft = 30; state.phase = 1; state.wave = 1;
+      phaseLabel.textContent = '1';
     }
 
-    // Função para mover o fogo perseguidor em direção ao jogador
-    function moveChasingFire() {
-      const speed = chasingFireSpeed;
-      if (chasingFireX < playerX) chasingFireX += speed;
-      if (chasingFireX > playerX) chasingFireX -= speed;
-      if (chasingFireY < playerY) chasingFireY += speed;
-      if (chasingFireY > playerY) chasingFireY -= speed;
-      chasingFire.style.top = `${chasingFireY}vw`;
-      chasingFire.style.left = `${chasingFireX}vw`;
+    function setupApocalypseWave(wave) {
+      clearArena();
+      gameArea.classList.add('apocalypse');
+      spawnTrees(Math.max(6, 14 - wave));
+      spawnPlayer();
+      const fireCount = 15 + wave * 3;
+      const chaserCount = Math.min(1 + Math.floor(wave / 2), 6);
+      const chaserSpeed = 0.5 + wave * 0.12;
+      for (let i = 0; i < fireCount; i++) {
+        let x, y;
+        do { x = rand(8, 95); y = rand(8, 95); } while (x < 20 && y < 20);
+        spawnFire(x, y);
+      }
+      for (let i = 0; i < chaserCount; i++) {
+        const corner = i % 4;
+        const cx = corner === 0 || corner === 3 ? 92 : 8;
+        const cy = corner < 2 ? 92 : 8;
+        spawnChaser(cx, cy, chaserSpeed);
+      }
+      state.timeLeft = Math.min(20 + wave * 2, 40);
+      state.phase = 2; state.wave = wave;
+      phaseLabel.textContent = `2.${wave}`;
+      timeLabel.classList.remove('danger');
+    }
 
-      const playerRect = player.getBoundingClientRect();
-      const chasingFireRect = chasingFire.getBoundingClientRect();
-      if (
-        playerRect.x < chasingFireRect.x + chasingFireRect.width &&
-        playerRect.x + playerRect.width > chasingFireRect.x &&
-        playerRect.y < chasingFireRect.y + chasingFireRect.height &&
-        playerRect.y + playerRect.height > chasingFireRect.y
-      ) {
-        endGame("O fogo perseguidor pegou você! Fim de jogo.");
+    const SPEED = 0.7;
+    function tick() {
+      if (!state.running || state.transitioning) return;
+      const now = performance.now();
+      const dt = Math.min(50, now - state.lastTick) / 16.67;
+      state.lastTick = now;
+      const p = state.player;
+      const move = SPEED * dt;
+      if (state.held.up) p.y -= move;
+      if (state.held.down) p.y += move;
+      if (state.held.left) p.x -= move;
+      if (state.held.right) p.x += move;
+      p.x = Math.max(3, Math.min(97, p.x));
+      p.y = Math.max(3, Math.min(97, p.y));
+      placeEntity(p.el, p.x, p.y);
+
+      for (const f of state.fires) {
+        if (f.out) continue;
+        if (dist2(p, f) < (p.r + f.r) ** 2) {
+          f.out = true;
+          f.el.classList.add('extinguished');
+          f.el.textContent = '💧';
+          const s = document.createElement('div');
+          s.className = 'splash';
+          s.textContent = '💦';
+          s.style.left = f.x + '%';
+          s.style.top = f.y + '%';
+          gameArea.appendChild(s);
+          setTimeout(() => s.remove(), 500);
+          state.score++;
+          scoreLabel.textContent = state.score;
+          beep(800 + state.score * 5, 0.08, 'square', 0.1);
+        }
+      }
+
+      for (const c of state.chasers) {
+        const dx = p.x - c.x, dy = p.y - c.y;
+        const d = Math.hypot(dx, dy) || 1;
+        c.x += (dx / d) * c.speed * dt;
+        c.y += (dy / d) * c.speed * dt;
+        placeEntity(c.el, c.x, c.y);
+        if (dist2(p, c) < (p.r + c.r) ** 2) {
+          gameOver('💀 O fogo te pegou!');
+          return;
+        }
+      }
+
+      if (state.fires.length > 0 && state.fires.every(f => f.out)) {
+        state.transitioning = true;
+        if (state.phase === 1) {
+          beep(1200, 0.3, 'sine', 0.2);
+          showBanner('🌋 APOCALIPSE!', 'O fogo saiu de controle...');
+          shakeScreen();
+          setTimeout(() => { setupApocalypseWave(1); startTimer(); state.transitioning = false; }, 1500);
+        } else {
+          beep(1500, 0.2, 'sine', 0.2);
+          showBanner(`Onda ${state.wave + 1}!`, 'Mais fogo se aproxima...');
+          setTimeout(() => { setupApocalypseWave(state.wave + 1); startTimer(); state.transitioning = false; }, 1200);
+        }
       }
     }
 
     function startTimer() {
-      gameInterval = setInterval(() => {
-        timeLeft--;
-        timerDisplay.textContent = `Tempo: ${timeLeft}s`;
-        if (timeLeft <= 0) {
-          endGame(`Tempo esgotado! Chamas apagadas: ${score}`);
+      clearInterval(state.gameTimer);
+      timeLabel.textContent = state.timeLeft;
+      timeLabel.classList.toggle('danger', state.timeLeft <= 5);
+      state.gameTimer = setInterval(() => {
+        if (state.transitioning) return;
+        state.timeLeft--;
+        timeLabel.textContent = state.timeLeft;
+        if (state.timeLeft <= 5) timeLabel.classList.add('danger');
+        else timeLabel.classList.remove('danger');
+        if (state.timeLeft <= 0) {
+          if (state.phase === 1) {
+            state.transitioning = true;
+            showBanner('⏰ Tempo!', 'O caos se instaura...');
+            shakeScreen();
+            setTimeout(() => { setupApocalypseWave(1); startTimer(); state.transitioning = false; }, 1500);
+          } else {
+            gameOver('⏰ O tempo acabou!');
+          }
         }
       }, 1000);
     }
 
-    function endGame(message) {
-      clearInterval(gameInterval);
-      clearInterval(chaseInterval);
-      alert(message);
-      resetGame();
+    function startGameLoop() {
+      cancelAnimationFrame(state.raf);
+      state.lastTick = performance.now();
+      const loop = () => {
+        if (!state.running) return;
+        tick();
+        state.raf = requestAnimationFrame(loop);
+      };
+      state.raf = requestAnimationFrame(loop);
     }
 
-    function resetGame() {
-      score = 0;
-      timeLeft = 30;
-      scoreDisplay.textContent = `Chamas Apagadas: ${score}`;
-      timerDisplay.textContent = `Tempo: ${timeLeft}s`;
-      fires.forEach(fire => fire.style.display = "block");
-      playerX = 0;
-      playerY = 0;
-      chasingFireX = 85;
-      chasingFireY = 85;
-      player.style.top = `${playerY}vw`;
-      player.style.left = `${playerX}vw`;
-      chasingFire.style.top = `${chasingFireY}vw`;
-      chasingFire.style.left = `${chasingFireX}vw`;
+    function startGame() {
+      state.score = 0;
+      state.transitioning = false;
+      scoreLabel.textContent = '0';
+      setupPhase1();
+      state.running = true;
+      hideAllScreens();
       startTimer();
+      startGameLoop();
     }
 
-    let chaseInterval = setInterval(moveChasingFire, 100);
-    document.getElementById('upButton').addEventListener('touchstart', () => movePlayer('ArrowUp'));
-    document.getElementById('downButton').addEventListener('touchstart', () => movePlayer('ArrowDown'));
-    document.getElementById('leftButton').addEventListener('touchstart', () => movePlayer('ArrowLeft'));
-    document.getElementById('rightButton').addEventListener('touchstart', () => movePlayer('ArrowRight'));
+    function gameOver(msg) {
+      if (!state.running) return;
+      state.running = false;
+      clearInterval(state.gameTimer);
+      cancelAnimationFrame(state.raf);
+      shakeScreen();
+      beep(200, 0.5, 'sawtooth', 0.2);
+      const isRecord = saveScore(state.playerName, state.score);
+      showGameOverScreen(msg, isRecord);
+    }
 
-    resetGame();
+    function loadRanking() {
+      try { return JSON.parse(localStorage.getItem(RANKING_KEY)) || []; } catch { return []; }
+    }
+    function saveRanking(list) { localStorage.setItem(RANKING_KEY, JSON.stringify(list)); }
+    function saveScore(name, score) {
+      if (score <= 0) return false;
+      const list = loadRanking();
+      const prevTopScore = list.length ? list[0].score : 0;
+      const entry = { name: name || 'Anônimo', score, date: new Date().toISOString() };
+      list.push(entry);
+      list.sort((a, b) => b.score - a.score);
+      const top = list.slice(0, MAX_RANK);
+      saveRanking(top);
+      return score > prevTopScore;
+    }
+    function getRankPosition(name, score) {
+      const list = loadRanking();
+      const pos = list.findIndex(e => e.name === name && e.score === score);
+      return pos >= 0 ? pos + 1 : -1;
+    }
+
+    function renderRanking(highlightName, highlightScore) {
+      const list = loadRanking();
+      const ul = $('rankingList');
+      if (list.length === 0) {
+        ul.innerHTML = '<li class="empty">Nenhuma pontuação ainda.<br>Seja o primeiro!</li>';
+        return;
+      }
+      let highlighted = false;
+      ul.innerHTML = list.map((e, i) => {
+        const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `${i + 1}º`;
+        const isMe = !highlighted && e.name === highlightName && e.score === highlightScore;
+        if (isMe) highlighted = true;
+        return `<li class="${isMe ? 'me' : ''}"><span class="pos">${medal}</span><span class="name">${escapeHtml(e.name)}</span><span class="score">${e.score}</span></li>`;
+      }).join('');
+    }
+    function escapeHtml(s) {
+      return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    }
+
+    function hideAllScreens() {
+      document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
+    }
+    function showScreen(id) { hideAllScreens(); $(id).classList.remove('hidden'); }
+    function showGameOverScreen(msg, isRecord) {
+      $('gameOverTitle').textContent = msg;
+      $('finalScore').textContent = state.score;
+      $('newRecordMsg').classList.toggle('hidden', !isRecord);
+      const pos = getRankPosition(state.playerName, state.score);
+      $('rankPosition').textContent = pos > 0
+        ? `Você está em ${pos}º lugar no ranking!`
+        : (state.score > 0 ? 'Continue tentando para entrar no Top 10!' : 'Tente novamente!');
+      showScreen('gameOverScreen');
+    }
+
+    function setupControls() {
+      const setHeld = (dir, val) => { state.held[dir] = val; };
+      document.querySelectorAll('.ctrl[data-dir]').forEach(btn => {
+        const dir = btn.dataset.dir;
+        const press = e => { e.preventDefault(); setHeld(dir, true); btn.classList.add('active'); };
+        const release = e => { e.preventDefault(); setHeld(dir, false); btn.classList.remove('active'); };
+        btn.addEventListener('touchstart', press, { passive: false });
+        btn.addEventListener('touchend', release);
+        btn.addEventListener('touchcancel', release);
+        btn.addEventListener('mousedown', press);
+        btn.addEventListener('mouseup', release);
+        btn.addEventListener('mouseleave', release);
+      });
+      const keyMap = { ArrowUp: 'up', ArrowDown: 'down', ArrowLeft: 'left', ArrowRight: 'right',
+                       w: 'up', s: 'down', a: 'left', d: 'right',
+                       W: 'up', S: 'down', A: 'left', D: 'right' };
+      window.addEventListener('keydown', e => {
+        if (keyMap[e.key]) { state.held[keyMap[e.key]] = true; e.preventDefault(); }
+      });
+      window.addEventListener('keyup', e => {
+        if (keyMap[e.key]) { state.held[keyMap[e.key]] = false; }
+      });
+      let touchStart = null;
+      gameArea.addEventListener('touchstart', e => {
+        const t = e.touches[0];
+        touchStart = { x: t.clientX, y: t.clientY };
+      }, { passive: true });
+      gameArea.addEventListener('touchmove', e => {
+        if (!touchStart || !state.running) return;
+        const t = e.touches[0];
+        const dx = t.clientX - touchStart.x;
+        const dy = t.clientY - touchStart.y;
+        const threshold = 8;
+        state.held.left = dx < -threshold;
+        state.held.right = dx > threshold;
+        state.held.up = dy < -threshold;
+        state.held.down = dy > threshold;
+      }, { passive: true });
+      const stopSwipe = () => {
+        touchStart = null;
+        state.held = { up: false, down: false, left: false, right: false };
+      };
+      gameArea.addEventListener('touchend', stopSwipe);
+      gameArea.addEventListener('touchcancel', stopSwipe);
+    }
+
+    function shareScore() {
+      const phaseInfo = state.wave > 1 ? ` (Apocalipse onda ${state.wave})` : '';
+      const text = `🔥 Joguei "Água vs Fogo - Salve o Pantanal" e apaguei ${state.score} chamas${phaseInfo}! Consegue superar? 💧`;
+      if (navigator.share) {
+        navigator.share({ title: 'Água vs Fogo', text }).catch(() => {});
+      } else if (navigator.clipboard) {
+        navigator.clipboard.writeText(text).then(() => alert('Pontuação copiada! Cole onde quiser compartilhar.'));
+      } else {
+        prompt('Copie sua pontuação:', text);
+      }
+    }
+
+    function bindUI() {
+      const nameInput = $('playerName');
+      nameInput.value = localStorage.getItem(NAME_KEY) || '';
+      $('btnStart').addEventListener('click', () => {
+        const name = nameInput.value.trim().slice(0, 14) || 'Anônimo';
+        state.playerName = name;
+        localStorage.setItem(NAME_KEY, name);
+        startGame();
+      });
+      $('btnRanking').addEventListener('click', () => { renderRanking(); showScreen('rankingScreen'); });
+      $('btnHowTo').addEventListener('click', () => showScreen('howToScreen'));
+      $('btnHowToBack').addEventListener('click', () => showScreen('startScreen'));
+      $('btnRankingBack').addEventListener('click', () => showScreen('startScreen'));
+      $('btnClearRanking').addEventListener('click', () => {
+        if (confirm('Apagar todo o ranking?')) {
+          localStorage.removeItem(RANKING_KEY);
+          renderRanking();
+        }
+      });
+      $('btnPlayAgain').addEventListener('click', startGame);
+      $('btnShareScore').addEventListener('click', shareScore);
+      $('btnGoRanking').addEventListener('click', () => {
+        renderRanking(state.playerName, state.score);
+        showScreen('rankingScreen');
+      });
+      $('btnGoHome').addEventListener('click', () => showScreen('startScreen'));
+    }
+
+    bindUI();
+    setupControls();
+    showScreen('startScreen');
+  })();
   </script>
 </body>
 </html>
