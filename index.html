@@ -26,7 +26,6 @@
       padding: 8px;
       touch-action: manipulation;
     }
-
     .screen {
       position: fixed;
       inset: 0;
@@ -40,7 +39,6 @@
       overflow-y: auto;
     }
     .screen.hidden { display: none; }
-
     .logo {
       font-size: clamp(32px, 8vw, 48px);
       font-weight: 700;
@@ -69,13 +67,7 @@
       max-width: 360px;
       margin-bottom: 12px;
     }
-    .panel h2 {
-      font-size: 18px;
-      margin-bottom: 12px;
-      text-align: center;
-      color: #ffd54a;
-    }
-
+    .panel h2 { font-size: 18px; margin-bottom: 12px; text-align: center; color: #ffd54a; }
     input[type="text"] {
       width: 100%;
       padding: 14px 16px;
@@ -90,7 +82,6 @@
     }
     input[type="text"]:focus { border-color: #ffd54a; }
     input[type="text"]::placeholder { color: rgba(255,255,255,0.4); }
-
     .btn {
       display: flex;
       align-items: center;
@@ -110,20 +101,9 @@
       box-shadow: 0 4px 0 rgba(0,0,0,0.25);
     }
     .btn:active { transform: translateY(2px); box-shadow: 0 2px 0 rgba(0,0,0,0.25); }
-    .btn-primary {
-      background: linear-gradient(180deg, #ff8a3d 0%, #e65100 100%);
-      color: #fff;
-    }
-    .btn-secondary {
-      background: linear-gradient(180deg, #4fc3f7 0%, #0288d1 100%);
-      color: #fff;
-    }
-    .btn-ghost {
-      background: rgba(255,255,255,0.1);
-      color: #fff;
-      border: 1px solid rgba(255,255,255,0.2);
-    }
-
+    .btn-primary { background: linear-gradient(180deg, #ff8a3d 0%, #e65100 100%); color: #fff; }
+    .btn-secondary { background: linear-gradient(180deg, #4fc3f7 0%, #0288d1 100%); color: #fff; }
+    .btn-ghost { background: rgba(255,255,255,0.1); color: #fff; border: 1px solid rgba(255,255,255,0.2); }
     .ranking-list { list-style: none; }
     .ranking-list li {
       display: grid;
@@ -141,36 +121,12 @@
     .ranking-list .name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .ranking-list .score { font-weight: 700; }
     .ranking-list .empty { text-align: center; opacity: 0.5; padding: 20px; display: block; grid-template-columns: none; }
-
-    #hud {
-      width: 100%;
-      max-width: 420px;
-      display: grid;
-      grid-template-columns: 1fr 1fr 1fr;
-      gap: 8px;
-      margin-bottom: 8px;
-    }
-    .hud-card {
-      background: rgba(0,0,0,0.35);
-      border: 1px solid rgba(255,255,255,0.1);
-      border-radius: 10px;
-      padding: 8px 6px;
-      text-align: center;
-    }
-    .hud-label {
-      font-size: 11px;
-      opacity: 0.7;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-    .hud-value {
-      font-size: 22px;
-      font-weight: 700;
-      color: #ffd54a;
-    }
+    #hud { width: 100%; max-width: 420px; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 8px; }
+    .hud-card { background: rgba(0,0,0,0.35); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 8px 6px; text-align: center; }
+    .hud-label { font-size: 11px; opacity: 0.7; text-transform: uppercase; letter-spacing: 0.5px; }
+    .hud-value { font-size: 22px; font-weight: 700; color: #ffd54a; }
     .hud-value.danger { color: #ff5252; animation: blink 0.6s infinite; }
     @keyframes blink { 50% { opacity: 0.5; } }
-
     #gameArea {
       position: relative;
       width: 100%;
@@ -201,7 +157,6 @@
       60% { transform: translate(-3px, -3px); }
       80% { transform: translate(3px, 3px); }
     }
-
     .entity {
       position: absolute;
       font-size: 28px;
@@ -212,15 +167,47 @@
     }
     .player { font-size: 32px; z-index: 10; }
     .fire { animation: flicker 0.4s infinite alternate; }
-    .chaser { filter: drop-shadow(0 0 6px #ff1744); z-index: 5; }
+    .chaser {
+      font-size: 56px;
+      filter: drop-shadow(0 0 10px #ff1744) drop-shadow(0 0 4px #ff5722);
+      z-index: 6;
+      animation: chaserPulse 0.5s infinite alternate;
+    }
+    @keyframes chaserPulse {
+      from { transform: translate(-50%, -50%) scale(1) rotate(-3deg); }
+      to { transform: translate(-50%, -50%) scale(1.15) rotate(3deg); }
+    }
+    .animal { font-size: 24px; z-index: 4; animation: animalBob 0.6s infinite alternate; }
+    @keyframes animalBob {
+      from { transform: translate(-50%, -50%) translateY(0); }
+      to { transform: translate(-50%, -50%) translateY(-3px); }
+    }
+    .saved { animation: savedFly 0.6s forwards; }
+    @keyframes savedFly {
+      to { transform: translate(-50%, -200%) scale(1.5); opacity: 0; }
+    }
+    .wind-smoke {
+      position: absolute;
+      font-size: 40px;
+      opacity: 0.35;
+      pointer-events: none;
+      top: var(--y);
+      left: -60px;
+      animation: windDrift var(--dur) linear infinite;
+      animation-delay: var(--delay);
+      z-index: 3;
+      filter: blur(1px);
+    }
+    @keyframes windDrift {
+      from { transform: translateX(0); }
+      to { transform: translateX(calc(100% + 460px)); }
+    }
     @keyframes flicker {
       from { transform: translate(-50%, -50%) scale(1); }
       to { transform: translate(-50%, -50%) scale(1.15); }
     }
     .extinguished { animation: poof 0.4s forwards; }
-    @keyframes poof {
-      to { transform: translate(-50%, -50%) scale(2); opacity: 0; }
-    }
+    @keyframes poof { to { transform: translate(-50%, -50%) scale(2); opacity: 0; } }
     .splash {
       position: absolute;
       pointer-events: none;
@@ -232,15 +219,7 @@
       0% { opacity: 1; transform: translate(-50%, -50%) scale(0.5); }
       100% { opacity: 0; transform: translate(-50%, -50%) scale(2); }
     }
-
-    #controls {
-      width: 100%;
-      max-width: 420px;
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 6px;
-      margin-top: 12px;
-    }
+    #controls { width: 100%; max-width: 420px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-top: 12px; }
     .ctrl {
       aspect-ratio: 1.4 / 1;
       background: linear-gradient(180deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.05) 100%);
@@ -255,12 +234,8 @@
       transition: transform 0.1s, background 0.1s;
       font-family: inherit;
     }
-    .ctrl:active, .ctrl.active {
-      background: rgba(255,213,74,0.3);
-      transform: scale(0.95);
-    }
+    .ctrl:active, .ctrl.active { background: rgba(255,213,74,0.3); transform: scale(0.95); }
     .ctrl.empty { visibility: hidden; }
-
     .banner {
       position: fixed;
       top: 50%;
@@ -283,34 +258,11 @@
       15%, 85% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
       100% { opacity: 0; transform: translate(-50%, -50%) scale(1.2); }
     }
-
-    .game-over-score {
-      font-size: 56px;
-      font-weight: 700;
-      color: #ffd54a;
-      text-align: center;
-      margin: 8px 0;
-    }
-    .game-over-label {
-      text-align: center;
-      opacity: 0.8;
-      margin-bottom: 4px;
-      font-size: 14px;
-    }
-    .new-record {
-      text-align: center;
-      color: #ffd54a;
-      font-weight: 700;
-      font-size: 22px;
-      margin-bottom: 12px;
-      animation: pulse 1s infinite;
-    }
+    .game-over-score { font-size: 56px; font-weight: 700; color: #ffd54a; text-align: center; margin: 8px 0; }
+    .game-over-label { text-align: center; opacity: 0.8; margin-bottom: 4px; font-size: 14px; }
+    .new-record { text-align: center; color: #ffd54a; font-weight: 700; font-size: 22px; margin-bottom: 12px; animation: pulse 1s infinite; }
     .new-record.hidden { display: none; }
-    @keyframes pulse {
-      0%, 100% { transform: scale(1); }
-      50% { transform: scale(1.08); }
-    }
-
+    @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.08); } }
     @media (max-width: 360px) {
       .entity { font-size: 22px; }
       .player { font-size: 26px; }
@@ -319,7 +271,6 @@
   </style>
 </head>
 <body>
-
   <div id="startScreen" class="screen">
     <div class="logo">💧 Água vs Fogo 🔥</div>
     <p class="subtitle">Salve o Pantanal apagando os focos de incêndio antes que tudo queime!</p>
@@ -335,9 +286,7 @@
   <div id="rankingScreen" class="screen hidden">
     <div class="logo">🏆 Ranking</div>
     <p class="subtitle">Top 10 melhores defensores do Pantanal</p>
-    <div class="panel">
-      <ol class="ranking-list" id="rankingList"></ol>
-    </div>
+    <div class="panel"><ol class="ranking-list" id="rankingList"></ol></div>
     <button class="btn btn-ghost" id="btnRankingBack">← Voltar</button>
     <button class="btn btn-ghost" id="btnClearRanking" style="font-size:14px;padding:10px;">Limpar Ranking</button>
   </div>
@@ -345,15 +294,12 @@
   <div id="howToScreen" class="screen hidden">
     <div class="logo">❓ Como Jogar</div>
     <div class="panel" style="text-align:left; line-height:1.7;">
-      <p><strong>🎯 Objetivo:</strong> apague o máximo de focos de incêndio 🔥</p>
-      <br>
-      <p><strong>🎮 Controles:</strong> use os botões de seta, teclado (WASD/setas) ou deslize o dedo na tela.</p>
-      <br>
-      <p><strong>⏱️ Fase 1 (30s):</strong> apague todas as chamas e fuja do fogo perseguidor 👹</p>
-      <br>
-      <p><strong>🌋 Apocalipse:</strong> ondas infinitas, cada vez mais rápidas e com mais fogo. Sobreviva o máximo possível!</p>
-      <br>
-      <p><strong>💡 Dica:</strong> use as árvores como referência e fique sempre em movimento!</p>
+      <p><strong>🎯 Objetivo:</strong> apague o máximo de focos de incêndio 🔥</p><br>
+      <p><strong>🎮 Controles:</strong> use os botões de seta, teclado (WASD/setas) ou deslize o dedo na tela.</p><br>
+      <p><strong>⏱️ Fase 1 (30s):</strong> apague todas as chamas e fuja do fogo gigante 🔥 que te persegue!</p><br>
+      <p><strong>🦌 Resgate animais:</strong> toque em onças, veados, capivaras e jacarés para salvá-los do incêndio (+3 pontos cada).</p><br>
+      <p><strong>🌋 Apocalipse:</strong> ondas infinitas, cada vez mais rápidas e com mais fogo. Sobreviva o máximo possível!</p><br>
+      <p><strong>💡 Dica:</strong> os animais fogem do fogo. Salve-os antes que sejam alcançados!</p>
     </div>
     <button class="btn btn-primary" id="btnHowToBack">Entendi!</button>
   </div>
@@ -395,11 +341,12 @@
     const RANKING_KEY = 'aguaVsFogo.ranking.v1';
     const NAME_KEY = 'aguaVsFogo.name';
     const MAX_RANK = 10;
+    const ANIMAL_EMOJIS = ['🦌', '🐆', '🦆', '🐊', '🦔', '🦝'];
 
     const state = {
       playerName: '', phase: 1, wave: 1, score: 0, timeLeft: 30, running: false,
       player: { x: 50, y: 50, r: 4, el: null },
-      fires: [], chasers: [],
+      fires: [], chasers: [], animals: [],
       held: { up: false, down: false, left: false, right: false },
       gameTimer: null, raf: null, lastTick: 0, audioCtx: null, transitioning: false,
     };
@@ -451,7 +398,28 @@
       setTimeout(() => gameArea.classList.remove('shake'), 300);
     }
 
-    function clearArena() { gameArea.innerHTML = ''; state.fires = []; state.chasers = []; }
+    function clearArena() {
+      gameArea.innerHTML = '';
+      state.fires = []; state.chasers = []; state.animals = [];
+    }
+    function spawnWind(count) {
+      for (let i = 0; i < count; i++) {
+        const s = document.createElement('div');
+        s.className = 'wind-smoke';
+        s.textContent = '💨';
+        s.style.setProperty('--y', rand(5, 90) + '%');
+        s.style.setProperty('--dur', rand(8, 16) + 's');
+        s.style.setProperty('--delay', (-rand(0, 16)) + 's');
+        gameArea.appendChild(s);
+      }
+    }
+    function spawnAnimal(x, y) {
+      const emoji = ANIMAL_EMOJIS[Math.floor(Math.random() * ANIMAL_EMOJIS.length)];
+      const a = { x, y, r: 3.5, vx: 0, vy: 0, speed: 0.45,
+        el: makeEntity(emoji, x, y, 'animal'), saved: false, dead: false };
+      state.animals.push(a);
+      return a;
+    }
     function spawnPlayer() {
       state.player.x = 10; state.player.y = 10;
       state.player.el = makeEntity('👩‍🚒', 10, 10, 'player');
@@ -461,7 +429,7 @@
       state.fires.push(f); return f;
     }
     function spawnChaser(x, y, speed) {
-      const c = { x, y, r: 4, speed, el: makeEntity('👹', x, y, 'chaser') };
+      const c = { x, y, r: 5, speed, el: makeEntity('🔥', x, y, 'chaser') };
       state.chasers.push(c); return c;
     }
     function spawnTrees(n) {
@@ -471,6 +439,7 @@
     function setupPhase1() {
       clearArena();
       gameArea.classList.remove('apocalypse');
+      spawnWind(3);
       spawnTrees(15);
       spawnPlayer();
       for (let i = 0; i < 18; i++) {
@@ -478,6 +447,7 @@
         do { x = rand(8, 95); y = rand(8, 95); } while (x < 25 && y < 25);
         spawnFire(x, y);
       }
+      for (let i = 0; i < 4; i++) spawnAnimal(rand(20, 90), rand(20, 90));
       spawnChaser(90, 90, 0.4);
       state.timeLeft = 30; state.phase = 1; state.wave = 1;
       phaseLabel.textContent = '1';
@@ -486,11 +456,13 @@
     function setupApocalypseWave(wave) {
       clearArena();
       gameArea.classList.add('apocalypse');
+      spawnWind(5 + Math.min(wave, 5));
       spawnTrees(Math.max(6, 14 - wave));
       spawnPlayer();
       const fireCount = 15 + wave * 3;
       const chaserCount = Math.min(1 + Math.floor(wave / 2), 6);
       const chaserSpeed = 0.5 + wave * 0.12;
+      for (let i = 0; i < Math.min(3 + wave, 8); i++) spawnAnimal(rand(15, 90), rand(15, 90));
       for (let i = 0; i < fireCount; i++) {
         let x, y;
         do { x = rand(8, 95); y = rand(8, 95); } while (x < 20 && y < 20);
@@ -514,6 +486,7 @@
       const now = performance.now();
       const dt = Math.min(50, now - state.lastTick) / 16.67;
       state.lastTick = now;
+
       const p = state.player;
       const move = SPEED * dt;
       if (state.held.up) p.y -= move;
@@ -531,15 +504,73 @@
           f.el.classList.add('extinguished');
           f.el.textContent = '💧';
           const s = document.createElement('div');
-          s.className = 'splash';
-          s.textContent = '💦';
-          s.style.left = f.x + '%';
-          s.style.top = f.y + '%';
+          s.className = 'splash'; s.textContent = '💦';
+          s.style.left = f.x + '%'; s.style.top = f.y + '%';
           gameArea.appendChild(s);
           setTimeout(() => s.remove(), 500);
           state.score++;
           scoreLabel.textContent = state.score;
           beep(800 + state.score * 5, 0.08, 'square', 0.1);
+        }
+      }
+
+      for (const a of state.animals) {
+        if (a.saved || a.dead) continue;
+        let fx = 0, fy = 0;
+        for (const f of state.fires) {
+          if (f.out) continue;
+          const dx = a.x - f.x, dy = a.y - f.y;
+          const d = Math.hypot(dx, dy);
+          if (d < 25 && d > 0.1) {
+            const w = (25 - d) / 25;
+            fx += (dx / d) * w; fy += (dy / d) * w;
+          }
+        }
+        for (const c of state.chasers) {
+          const dx = a.x - c.x, dy = a.y - c.y;
+          const d = Math.hypot(dx, dy);
+          if (d < 30 && d > 0.1) {
+            const w = (30 - d) / 30 * 1.5;
+            fx += (dx / d) * w; fy += (dy / d) * w;
+          }
+        }
+        const flen = Math.hypot(fx, fy);
+        if (flen > 0.1) {
+          a.vx = (fx / flen) * a.speed;
+          a.vy = (fy / flen) * a.speed;
+        } else {
+          a.vx *= 0.92; a.vy *= 0.92;
+          if (Math.random() < 0.02) {
+            a.vx = rand(-0.2, 0.2);
+            a.vy = rand(-0.2, 0.2);
+          }
+        }
+        a.x += a.vx * dt; a.y += a.vy * dt;
+        a.x = Math.max(3, Math.min(97, a.x));
+        a.y = Math.max(3, Math.min(97, a.y));
+        placeEntity(a.el, a.x, a.y);
+
+        for (const c of state.chasers) {
+          if (dist2(a, c) < (a.r + c.r) ** 2) {
+            a.dead = true;
+            a.el.classList.add('extinguished');
+            break;
+          }
+        }
+        if (a.dead) continue;
+
+        if (dist2(p, a) < (p.r + a.r) ** 2) {
+          a.saved = true;
+          a.el.classList.add('saved');
+          state.score += 3;
+          scoreLabel.textContent = state.score;
+          beep(1400, 0.15, 'sine', 0.18);
+          beep(1800, 0.15, 'sine', 0.15);
+          const s = document.createElement('div');
+          s.className = 'splash'; s.textContent = '💚';
+          s.style.left = a.x + '%'; s.style.top = a.y + '%';
+          gameArea.appendChild(s);
+          setTimeout(() => s.remove(), 500);
         }
       }
 
@@ -697,12 +728,19 @@
       const keyMap = { ArrowUp: 'up', ArrowDown: 'down', ArrowLeft: 'left', ArrowRight: 'right',
                        w: 'up', s: 'down', a: 'left', d: 'right',
                        W: 'up', S: 'down', A: 'left', D: 'right' };
+      const isTyping = e => {
+        const t = e.target;
+        return t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable);
+      };
       window.addEventListener('keydown', e => {
+        if (isTyping(e)) return;
         if (keyMap[e.key]) { state.held[keyMap[e.key]] = true; e.preventDefault(); }
       });
       window.addEventListener('keyup', e => {
+        if (isTyping(e)) return;
         if (keyMap[e.key]) { state.held[keyMap[e.key]] = false; }
       });
+
       let touchStart = null;
       gameArea.addEventListener('touchstart', e => {
         const t = e.touches[0];
