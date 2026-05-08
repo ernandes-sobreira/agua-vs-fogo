@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Personagem Apagando o Fogo no Pantanal</title>
+  <style>
+    body {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin: 0;
+      background-color: #e0c49b;
+    }
+    #gameArea {
+      position: relative;
+      width: 100vw;
+      height: 100vw;
+      max-width: 400px;
+      max-height: 400px;
+      background: #d2b48c;
+      border: 2px solid #333;
+      overflow: hidden;
+    }
+    .player, .fire, .tree, .smoke, .chasing-fire {
+      position: absolute;
+      font-size: 6vw;
+    }
+    .fire, .tree, .chasing-fire { font-size: 6vw; }
+    .smoke {
+      font-size: 8vw;
+      opacity: 0.5;
+      animation: smokeMove 5s linear infinite;
+    }
+    @keyframes smokeMove {
+      0% { left: -20vw; }
+      100% { left: 100vw; }
+    }
+    #scoreBoard {
+      display: flex;
+      justify-content: space-between;
+      width: 90vw;
+      max-width: 400px;
+      margin-top: 5px;
+      font-size: 5vw;
+    }
+    .controls {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      width: 90vw;
+      max-width: 400px;
+    }
+    .control-button {
+      width: 18vw;
+      height: 18vw;
+      font-size: 6vw;
+      margin: 2vw;
+      text-align: center;
+      border-radius: 10px;
+      background-color: #d3d3d3;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+  </style>
+</head>
+<body>
+  <div id="gameArea">
+    <div id="player" class="player">👩‍🚒💧</div>
+    <div id="chasingFire" class="chasing-fire" style="top: 85%; left: 85%;">🔥</div>
+    
+    <!-- Adicionando 20 focos de incêndio -->
+    <div class="fire" style="top: 10%; left: 10%;">🔥</div>
+    <div class="fire" style="top: 15%; left: 70%;">🔥</div>
+    <div class="fire" style="top: 20%; left: 40%;">🔥</div>
+    <div class="fire" style="top: 25%; left: 20%;">🔥</div>
+    <div class="fire" style="top: 30%; left: 60%;">🔥</div>
+    <div class="fire" style="top: 35%; left: 80%;">🔥</div>
+    <div class="fire" style="top: 40%; left: 30%;">🔥</div>
+    <div class="fire" style="top: 45%; left: 50%;">🔥</div>
+    <div class="fire" style="top: 50%; left: 70%;">🔥</div>
+    <div class="fire" style="top: 55%; left: 10%;">🔥</div>
+    <div class="fire" style="top: 60%; left: 90%;">🔥</div>
+    <div class="fire" style="top: 65%; left: 20%;">🔥</div>
+    <div class="fire" style="top: 70%; left: 40%;">🔥</div>
+    <div class="fire" style="top: 75%; left: 60%;">🔥</div>
+    <div class="fire" style="top: 80%; left: 50%;">🔥</div>
+    <div class="fire" style="top: 85%; left: 30%;">🔥</div>
+    <div class="fire" style="top: 90%; left: 70%;">🔥</div>
+    <div class="fire" style="top: 20%; left: 90%;">🔥</div>
+    <div class="fire" style="top: 10%; left: 30%;">🔥</div>
+    <div class="fire" style="top: 5%; left: 50%;">🔥</div>
+    
+    <!-- Adicionando 20 árvores como barreiras -->
+    <div class="tree" style="top: 20%; left: 10%;">🌳</div>
+    <div class="tree" style="top: 30%; left: 20%;">🌳</div>
+    <div class="tree" style="top: 40%; left: 40%;">🌳</div>
+    <div class="tree" style="top: 50%; left: 30%;">🌳</div>
+    <div class="tree" style="top: 60%; left: 50%;">🌳</div>
+    <div class="tree" style="top: 70%; left: 60%;">🌳</div>
+    <div class="tree" style="top: 80%; left: 20%;">🌳</div>
+    <div class="tree" style="top: 15%; left: 15%;">🌳</div>
+    <div class="tree" style="top: 25%; left: 35%;">🌳</div>
+    <div class="tree" style="top: 35%; left: 75%;">🌳</div>
+    <div class="tree" style="top: 45%; left: 85%;">🌳</div>
+    <div class="tree" style="top: 55%; left: 45%;">🌳</div>
+    <div class="tree" style="top: 65%; left: 55%;">🌳</div>
+    <div class="tree" style="top: 75%; left: 15%;">🌳</div>
+    <div class="tree" style="top: 85%; left: 25%;">🌳</div>
+    <div class="tree" style="top: 5%; left: 5%;">🌳</div>
+    <div class="tree" style="top: 25%; left: 90%;">🌳</div>
+    <div class="tree" style="top: 35%; left: 20%;">🌳</div>
+    <div class="tree" style="top: 65%; left: 75%;">🌳</div>
+    <div class="tree" style="top: 15%; left: 70%;">🌳</div>
+
+    <!-- Nuvens de fumaça -->
+    <div class="smoke" style="top: 5%; left: -20vw; animation-delay: 0s;">💨</div>
+    <div class="smoke" style="top: 30%; left: -20vw; animation-delay: 1s;">💨</div>
+    <div class="smoke" style="top: 60%; left: -20vw; animation-delay: 2s;">💨</div>
+  </div>
+  <div id="scoreBoard">
+    <div id="score">Chamas Apagadas: 0</div>
+    <div id="timer">Tempo: 30s</div>
+  </div>
+  <div class="controls">
+    <button class="control-button" id="upButton">⬆️</button>
+  </div>
+  <div class="controls">
+    <button class="control-button" id="leftButton">⬅️</button>
+    <button class="control-button" id="downButton">⬇️</button>
+    <button class="control-button" id="rightButton">➡️</button>
+  </div>
+
+  <script>
+    const player = document.getElementById("player");
+    const fires = document.querySelectorAll(".fire");
+    const chasingFire = document.getElementById("chasingFire");
+    const scoreDisplay = document.getElementById("score");
+    const timerDisplay = document.getElementById("timer");
+    let score = 0;
+    let timeLeft = 30;
+    let gameInterval;
+
+    let playerX = 0;
+    let playerY = 0;
+    let chasingFireX = 85;
+    let chasingFireY = 85;
+    const chasingFireSpeed = 0.5; // Velocidade do fogo perseguidor
+
+    function movePlayer(direction) {
+      const moveAmount = 5;
+      if (direction === "ArrowUp" && playerY > 0) playerY -= moveAmount;
+      if (direction === "ArrowDown" && playerY < 85) playerY += moveAmount;
+      if (direction === "ArrowLeft" && playerX > 0) playerX -= moveAmount;
+      if (direction === "ArrowRight" && playerX < 85) playerX += moveAmount;
+      player.style.top = `${playerY}vw`;
+      player.style.left = `${playerX}vw`;
+      checkFireCollision();
+    }
+
+    function checkFireCollision() {
+      let allFiresOut = true;
+      fires.forEach((fire) => {
+        const playerRect = player.getBoundingClientRect();
+        const fireRect = fire.getBoundingClientRect();
+
+        if (
+          playerRect.x < fireRect.x + fireRect.width &&
+          playerRect.x + playerRect.width > fireRect.x &&
+          playerRect.y < fireRect.y + fireRect.height &&
+          playerRect.y + playerRect.height > fireRect.y &&
+          fire.style.display !== "none"
+        ) {
+          fire.style.display = "none";
+          score++;
+          scoreDisplay.textContent = `Chamas Apagadas: ${score}`;
+        }
+        if (fire.style.display !== "none") {
+          allFiresOut = false;
+        }
+      });
+
+      if (allFiresOut) {
+        endGame("VOCÊ VENCEU! Parabéns!");
+      }
+    }
+
+    // Função para mover o fogo perseguidor em direção ao jogador
+    function moveChasingFire() {
+      const speed = chasingFireSpeed;
+      if (chasingFireX < playerX) chasingFireX += speed;
+      if (chasingFireX > playerX) chasingFireX -= speed;
+      if (chasingFireY < playerY) chasingFireY += speed;
+      if (chasingFireY > playerY) chasingFireY -= speed;
+      chasingFire.style.top = `${chasingFireY}vw`;
+      chasingFire.style.left = `${chasingFireX}vw`;
+
+      const playerRect = player.getBoundingClientRect();
+      const chasingFireRect = chasingFire.getBoundingClientRect();
+      if (
+        playerRect.x < chasingFireRect.x + chasingFireRect.width &&
+        playerRect.x + playerRect.width > chasingFireRect.x &&
+        playerRect.y < chasingFireRect.y + chasingFireRect.height &&
+        playerRect.y + playerRect.height > chasingFireRect.y
+      ) {
+        endGame("O fogo perseguidor pegou você! Fim de jogo.");
+      }
+    }
+
+    function startTimer() {
+      gameInterval = setInterval(() => {
+        timeLeft--;
+        timerDisplay.textContent = `Tempo: ${timeLeft}s`;
+        if (timeLeft <= 0) {
+          endGame(`Tempo esgotado! Chamas apagadas: ${score}`);
+        }
+      }, 1000);
+    }
+
+    function endGame(message) {
+      clearInterval(gameInterval);
+      clearInterval(chaseInterval);
+      alert(message);
+      resetGame();
+    }
+
+    function resetGame() {
+      score = 0;
+      timeLeft = 30;
+      scoreDisplay.textContent = `Chamas Apagadas: ${score}`;
+      timerDisplay.textContent = `Tempo: ${timeLeft}s`;
+      fires.forEach(fire => fire.style.display = "block");
+      playerX = 0;
+      playerY = 0;
+      chasingFireX = 85;
+      chasingFireY = 85;
+      player.style.top = `${playerY}vw`;
+      player.style.left = `${playerX}vw`;
+      chasingFire.style.top = `${chasingFireY}vw`;
+      chasingFire.style.left = `${chasingFireX}vw`;
+      startTimer();
+    }
+
+    let chaseInterval = setInterval(moveChasingFire, 100);
+    document.getElementById('upButton').addEventListener('touchstart', () => movePlayer('ArrowUp'));
+    document.getElementById('downButton').addEventListener('touchstart', () => movePlayer('ArrowDown'));
+    document.getElementById('leftButton').addEventListener('touchstart', () => movePlayer('ArrowLeft'));
+    document.getElementById('rightButton').addEventListener('touchstart', () => movePlayer('ArrowRight'));
+
+    resetGame();
+  </script>
+</body>
+</html>
