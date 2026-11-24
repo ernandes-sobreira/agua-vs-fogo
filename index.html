@@ -1,814 +1,432 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <meta name="theme-color" content="#1a4d2e">
-  <title>Água vs Fogo - Salve o Pantanal</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap" rel="stylesheet">
-  <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; user-select: none; }
-    html, body {
-      height: 100%;
-      overflow: hidden;
-      font-family: 'Fredoka', system-ui, sans-serif;
-      background: linear-gradient(180deg, #2d5016 0%, #1a4d2e 100%);
-      color: #fff;
-    }
-    body {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: flex-start;
-      min-height: 100vh;
-      padding: 8px;
-      touch-action: manipulation;
-    }
-    .screen {
-      position: fixed;
-      inset: 0;
-      background: linear-gradient(180deg, rgba(15,38,20,0.97) 0%, rgba(26,77,46,0.97) 100%);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
-      z-index: 100;
-      overflow-y: auto;
-    }
-    .screen.hidden { display: none; }
-    .logo {
-      font-size: clamp(32px, 8vw, 48px);
-      font-weight: 700;
-      text-align: center;
-      margin-bottom: 8px;
-      text-shadow: 0 4px 12px rgba(0,0,0,0.5);
-      background: linear-gradient(180deg, #ffd54a 0%, #ff7043 60%, #c62828 100%);
-      -webkit-background-clip: text;
-      background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
-    .subtitle {
-      font-size: clamp(13px, 3.5vw, 16px);
-      opacity: 0.85;
-      margin-bottom: 24px;
-      text-align: center;
-      max-width: 320px;
-    }
-    .panel {
-      background: rgba(255,255,255,0.08);
-      backdrop-filter: blur(8px);
-      border: 1px solid rgba(255,255,255,0.15);
-      border-radius: 16px;
-      padding: 20px;
-      width: 100%;
-      max-width: 360px;
-      margin-bottom: 12px;
-    }
-    .panel h2 { font-size: 18px; margin-bottom: 12px; text-align: center; color: #ffd54a; }
-    input[type="text"] {
-      width: 100%;
-      padding: 14px 16px;
-      font-size: 16px;
-      font-family: inherit;
-      border: 2px solid rgba(255,255,255,0.2);
-      background: rgba(0,0,0,0.3);
-      color: #fff;
-      border-radius: 12px;
-      outline: none;
-      transition: border-color 0.2s;
-    }
-    input[type="text"]:focus { border-color: #ffd54a; }
-    input[type="text"]::placeholder { color: rgba(255,255,255,0.4); }
-    .btn {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      width: 100%;
-      max-width: 360px;
-      padding: 16px 20px;
-      font-size: 18px;
-      font-weight: 600;
-      font-family: inherit;
-      border: none;
-      border-radius: 14px;
-      cursor: pointer;
-      transition: transform 0.1s, box-shadow 0.2s;
-      margin-bottom: 10px;
-      box-shadow: 0 4px 0 rgba(0,0,0,0.25);
-    }
-    .btn:active { transform: translateY(2px); box-shadow: 0 2px 0 rgba(0,0,0,0.25); }
-    .btn-primary { background: linear-gradient(180deg, #ff8a3d 0%, #e65100 100%); color: #fff; }
-    .btn-secondary { background: linear-gradient(180deg, #4fc3f7 0%, #0288d1 100%); color: #fff; }
-    .btn-ghost { background: rgba(255,255,255,0.1); color: #fff; border: 1px solid rgba(255,255,255,0.2); }
-    .ranking-list { list-style: none; }
-    .ranking-list li {
-      display: grid;
-      grid-template-columns: 36px 1fr auto;
-      gap: 10px;
-      align-items: center;
-      padding: 10px 12px;
-      margin-bottom: 6px;
-      background: rgba(0,0,0,0.2);
-      border-radius: 10px;
-      font-size: 15px;
-    }
-    .ranking-list li.me { background: rgba(255,213,74,0.2); border: 1px solid #ffd54a; }
-    .ranking-list .pos { font-weight: 700; color: #ffd54a; text-align: center; }
-    .ranking-list .name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .ranking-list .score { font-weight: 700; }
-    .ranking-list .empty { text-align: center; opacity: 0.5; padding: 20px; display: block; grid-template-columns: none; }
-    #hud { width: 100%; max-width: 420px; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 8px; }
-    .hud-card { background: rgba(0,0,0,0.35); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 8px 6px; text-align: center; }
-    .hud-label { font-size: 11px; opacity: 0.7; text-transform: uppercase; letter-spacing: 0.5px; }
-    .hud-value { font-size: 22px; font-weight: 700; color: #ffd54a; }
-    .hud-value.danger { color: #ff5252; animation: blink 0.6s infinite; }
-    @keyframes blink { 50% { opacity: 0.5; } }
-    #gameArea {
-      position: relative;
-      width: 100%;
-      max-width: 420px;
-      aspect-ratio: 1 / 1;
-      background:
-        radial-gradient(ellipse at 30% 20%, #6b8e23 0%, transparent 50%),
-        radial-gradient(ellipse at 70% 80%, #8b6914 0%, transparent 50%),
-        linear-gradient(135deg, #c2a878 0%, #a0825c 100%);
-      border: 3px solid #2d5016;
-      border-radius: 12px;
-      overflow: hidden;
-      box-shadow: 0 8px 24px rgba(0,0,0,0.4), inset 0 0 60px rgba(0,0,0,0.2);
-      touch-action: none;
-    }
-    #gameArea.apocalypse {
-      background:
-        radial-gradient(ellipse at 30% 20%, #4a1c0d 0%, transparent 50%),
-        radial-gradient(ellipse at 70% 80%, #2d0a05 0%, transparent 50%),
-        linear-gradient(135deg, #6b2810 0%, #3d1605 100%);
-      box-shadow: 0 8px 24px rgba(0,0,0,0.6), inset 0 0 80px rgba(255,87,34,0.4);
-    }
-    #gameArea.shake { animation: shake 0.3s; }
-    @keyframes shake {
-      0%, 100% { transform: translate(0,0); }
-      20% { transform: translate(-4px, 2px); }
-      40% { transform: translate(4px, -2px); }
-      60% { transform: translate(-3px, -3px); }
-      80% { transform: translate(3px, 3px); }
-    }
-    .entity {
-      position: absolute;
-      font-size: 28px;
-      line-height: 1;
-      transform: translate(-50%, -50%);
-      pointer-events: none;
-      filter: drop-shadow(0 2px 2px rgba(0,0,0,0.4));
-    }
-    .player { font-size: 32px; z-index: 10; }
-    .fire { animation: flicker 0.4s infinite alternate; }
-    .chaser {
-      font-size: 56px;
-      filter: drop-shadow(0 0 10px #ff1744) drop-shadow(0 0 4px #ff5722);
-      z-index: 6;
-      animation: chaserPulse 0.5s infinite alternate;
-    }
-    @keyframes chaserPulse {
-      from { transform: translate(-50%, -50%) scale(1) rotate(-3deg); }
-      to { transform: translate(-50%, -50%) scale(1.15) rotate(3deg); }
-    }
-    .animal { font-size: 24px; z-index: 4; animation: animalBob 0.6s infinite alternate; }
-    @keyframes animalBob {
-      from { transform: translate(-50%, -50%) translateY(0); }
-      to { transform: translate(-50%, -50%) translateY(-3px); }
-    }
-    .saved { animation: savedFly 0.6s forwards; }
-    @keyframes savedFly {
-      to { transform: translate(-50%, -200%) scale(1.5); opacity: 0; }
-    }
-    .wind-smoke {
-      position: absolute;
-      font-size: 40px;
-      opacity: 0.35;
-      pointer-events: none;
-      top: var(--y);
-      left: -60px;
-      animation: windDrift var(--dur) linear infinite;
-      animation-delay: var(--delay);
-      z-index: 3;
-      filter: blur(1px);
-    }
-    @keyframes windDrift {
-      from { transform: translateX(0); }
-      to { transform: translateX(calc(100% + 460px)); }
-    }
-    @keyframes flicker {
-      from { transform: translate(-50%, -50%) scale(1); }
-      to { transform: translate(-50%, -50%) scale(1.15); }
-    }
-    .extinguished { animation: poof 0.4s forwards; }
-    @keyframes poof { to { transform: translate(-50%, -50%) scale(2); opacity: 0; } }
-    .splash {
-      position: absolute;
-      pointer-events: none;
-      transform: translate(-50%, -50%);
-      font-size: 24px;
-      animation: splash 0.5s forwards;
-    }
-    @keyframes splash {
-      0% { opacity: 1; transform: translate(-50%, -50%) scale(0.5); }
-      100% { opacity: 0; transform: translate(-50%, -50%) scale(2); }
-    }
-    #controls { width: 100%; max-width: 420px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-top: 12px; }
-    .ctrl {
-      aspect-ratio: 1.4 / 1;
-      background: linear-gradient(180deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.05) 100%);
-      border: 2px solid rgba(255,255,255,0.2);
-      border-radius: 12px;
-      color: #fff;
-      font-size: 28px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: transform 0.1s, background 0.1s;
-      font-family: inherit;
-    }
-    .ctrl:active, .ctrl.active { background: rgba(255,213,74,0.3); transform: scale(0.95); }
-    .ctrl.empty { visibility: hidden; }
-    .banner {
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      background: linear-gradient(135deg, #c62828, #e65100);
-      padding: 24px 36px;
-      border-radius: 18px;
-      font-size: 26px;
-      font-weight: 700;
-      box-shadow: 0 12px 40px rgba(0,0,0,0.5);
-      z-index: 200;
-      text-align: center;
-      animation: bannerPop 2s forwards;
-      pointer-events: none;
-    }
-    .banner small { display: block; font-size: 13px; opacity: 0.9; margin-top: 4px; font-weight: 400; }
-    @keyframes bannerPop {
-      0% { opacity: 0; transform: translate(-50%, -50%) scale(0.5); }
-      15%, 85% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
-      100% { opacity: 0; transform: translate(-50%, -50%) scale(1.2); }
-    }
-    .game-over-score { font-size: 56px; font-weight: 700; color: #ffd54a; text-align: center; margin: 8px 0; }
-    .game-over-label { text-align: center; opacity: 0.8; margin-bottom: 4px; font-size: 14px; }
-    .new-record { text-align: center; color: #ffd54a; font-weight: 700; font-size: 22px; margin-bottom: 12px; animation: pulse 1s infinite; }
-    .new-record.hidden { display: none; }
-    @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.08); } }
-    @media (max-width: 360px) {
-      .entity { font-size: 22px; }
-      .player { font-size: 26px; }
-      .ctrl { font-size: 24px; }
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#ffffff">
+<title>Água vs Fogo · Brigada do Pantanal</title>
+<style>
+  :root{--ink:#2a1f17;--soft:#6b5d52;--line:#eee3d8;--main:#0369a1;--deep:#075985;--dark:#0c4a6e;--glow:rgba(3,105,161,.18);--err:#dc2626;--ok:#16a34a}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:"Segoe UI",system-ui,-apple-system,Roboto,sans-serif;color:var(--ink);background:#fff;min-height:100vh;
+    display:flex;flex-direction:column;align-items:center;padding:12px 14px 40px;-webkit-tap-highlight-color:transparent}
+  .top{width:100%;max-width:1000px;display:flex;justify-content:space-between;align-items:center;gap:8px}
+  .hub{display:inline-flex;align-items:center;gap:6px;color:var(--deep);text-decoration:none;font-weight:600;font-size:.9rem;padding:7px 12px;border-radius:20px;border:1.5px solid var(--line)}
+  .hub svg{width:14px;height:14px}
+  .tools button{border:1.5px solid var(--line);background:#fff;border-radius:20px;padding:7px 12px;font:inherit;font-size:.85rem;font-weight:600;color:var(--deep);cursor:pointer}
+  header{text-align:center;max-width:760px;margin-top:6px}
+  h1{font-size:clamp(1.5rem,5.5vw,2.3rem);font-weight:900;color:var(--dark)}
+  .sub{color:var(--soft);font-size:.95rem;margin:4px 0 10px}
+  .hud{display:flex;gap:7px;justify-content:center;margin:4px 0 10px;flex-wrap:wrap;font-size:.88rem}
+  .hud span{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:30px;color:#fff;font-weight:600}
+  .hud b{font-size:1.02rem;font-weight:800}
+  .hud .h1{background:#0284c7}.hud .h2{background:var(--main)}.hud .h3{background:var(--deep)}.hud .h4{background:var(--dark)}.hud .h5{background:#b91c1c}.hud .h6{background:#c2410c}
+  .card{width:min(1000px,100%);background:#fff;border:3px solid var(--main);border-radius:22px;padding:10px;box-shadow:0 12px 30px var(--glow);position:relative}
+  .cwrap{position:relative;border-radius:14px;overflow:hidden;background:#dff1ff}
+  canvas{display:block;width:100%;height:auto;aspect-ratio:8/5;touch-action:none}
+  .ov{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:9px;text-align:center;
+    padding:16px;background:rgba(255,255,255,.97);overflow:auto;z-index:5}
+  .ov[hidden]{display:none}
+  .ov h2{font-size:clamp(1.15rem,4vw,1.65rem);color:var(--dark);font-weight:900}
+  .ov p{font-size:clamp(.86rem,2.4vw,.98rem);line-height:1.45;max-width:640px}
+  .ov .small{font-size:.8rem;color:var(--soft)}
+  .info{max-width:640px;background:#f0f9ff;border:2px solid #bae6fd;border-radius:14px;padding:10px 14px;text-align:left;font-size:.92rem;line-height:1.5}
+  .info b{color:var(--deep)}
+  .btn{background:var(--main);color:#fff;border:0;padding:11px 22px;border-radius:12px;font-weight:800;cursor:pointer;font-size:1rem;font-family:inherit}
+  .btn.ghost{background:#fff;color:var(--deep);border:2px solid var(--line)}
+  .btn:disabled{opacity:.45}
+  .row{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+  .tally{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;font-size:.86rem}
+  .tally span{background:#f0f9ff;border:1.5px solid #bae6fd;border-radius:20px;padding:4px 10px}
+  .tally .neg{background:#fef2f2;border-color:#fecaca;color:var(--err)}
+  .pad{display:none;justify-content:space-between;align-items:flex-end;gap:10px;margin-top:10px;user-select:none;-webkit-user-select:none}
+  .pad .grp{display:grid;grid-template-columns:repeat(3,58px);gap:8px}.pad .grp.act{grid-template-columns:repeat(2,78px)}.pad .sp{visibility:hidden}
+  .pad button{height:62px;border-radius:18px;border:3px solid var(--main);background:#f0f9ff;color:var(--deep);font:inherit;font-weight:900;font-size:.8rem;
+    touch-action:none;display:flex;align-items:center;justify-content:center;gap:4px;padding:0}
+  .pad button svg{width:28px;height:28px;flex:none}
+  .pad button.on{background:var(--main);color:#fff}
+  .pad button[data-k=ace]{border-color:#a16207;color:#854d0e;background:#fefce8}
+  .pad button[data-k=ace].on{background:#a16207;color:#fff}
+  @media (pointer:coarse){.pad{display:flex}}
+  @media (pointer:coarse) and (orientation:landscape) and (max-height:560px){
+    body{padding:4px 6px 20px} header,.hud,.top{display:none}
+    .card{padding:4px;border-width:2px;width:min(1000px,calc((100dvh - 16px)*8/5 + 8px))}
+    .pad{position:absolute;left:10px;right:10px;bottom:10px;margin:0;pointer-events:none;z-index:4}
+    .pad button{pointer-events:auto;opacity:.8;height:54px}
+  }
+  .keys{font-size:.82rem;color:var(--soft);text-align:center;margin-top:8px}
+  .keys kbd{display:inline-block;border:1.5px solid var(--line);border-bottom-width:3px;border-radius:6px;padding:0 6px;font-family:inherit;font-weight:700;color:var(--ink)}
+  @media (pointer:coarse){.keys{display:none}}
+  .savebox{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+  .savebox input{padding:10px 12px;border-radius:10px;border:2px solid var(--line);font-size:1rem;width:190px;font-family:inherit}
+  .ranking{margin-top:16px;width:min(1000px,100%);border:3px solid var(--main);border-radius:18px;padding:0 16px 12px;overflow:hidden}
+  .ranking h3{font-size:1.02rem;margin:0 -16px 8px;padding:10px 16px;background:var(--main);color:#fff}
+  .ranking ol{list-style:none}
+  .ranking li{display:flex;justify-content:space-between;gap:10px;padding:7px 4px;border-bottom:1px solid var(--line);font-size:.92rem}
+  .ranking li:last-child{border-bottom:0}.ranking li:nth-child(1){font-weight:700}
+  .ranking .pos{display:inline-block;min-width:2.1em;font-weight:800;color:var(--deep)}
+  .note{font-size:.8rem;color:var(--soft);margin-top:6px}
+  footer{margin-top:22px;font-size:.8rem;color:var(--soft);text-align:center;line-height:1.6;max-width:900px}
+  footer .credit{font-weight:700;color:var(--ink)} footer a{color:var(--deep)}
+  @media(max-width:600px){
+    .ov{position:fixed;inset:auto 10px;top:50%;transform:translateY(-50%);max-height:86vh;border:3px solid var(--main);border-radius:18px;
+      box-shadow:0 18px 40px rgba(0,0,0,.25);z-index:30;justify-content:flex-start}
+    body{padding:8px 8px 32px}.sub{display:none}.card{padding:6px}
+    .hud span{padding:4px 8px;font-size:.76rem}.hud b{font-size:.9rem}.hud{gap:4px}
+  }
+</style>
+<style>.meter{display:inline-block;width:60px;height:8px;border-radius:6px;background:rgba(255,255,255,.35);overflow:hidden;vertical-align:middle}.meter i{display:block;height:100%;background:#fff}</style>
 </head>
 <body>
-  <div id="startScreen" class="screen">
-    <div class="logo">💧 Água vs Fogo 🔥</div>
-    <p class="subtitle">Salve o Pantanal apagando os focos de incêndio antes que tudo queime!</p>
-    <div class="panel">
-      <h2>Seu nome</h2>
-      <input type="text" id="playerName" maxlength="14" placeholder="Digite seu nome" autocomplete="off">
+<div class="top">
+  <a class="hub" href="https://ernandes-sobreira.github.io/jogos-ambientais/"><svg viewBox="0 0 16 16"><path d="M10 2 4 8l6 6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>Todos os jogos</a>
+  <div class="tools"><button id="bSom" type="button">Som: ligado</button> <button id="bPausa" type="button">Pausar</button></div>
+</div>
+<header>
+  <h1>💧 Água vs Fogo 🔥</h1>
+  <p class="sub">Você comanda a bomba costal da brigada. Leia o vento, molhe as chamas, abra aceiros e não deixe o fogo chegar à sede nem ao ninhal.</p>
+</header>
+<div class="hud">
+  <span class="h1">Pontos <b id="hPts">0</b></span>
+  <span class="h2">Fase <b id="hFase">1/5</b></span>
+  <span class="h3">Água <b id="hAgua">20 L</b></span>
+  <span class="h6">Queimado <b id="hQ">0%</b><small id="hLim">/25%</small></span>
+  <span class="h4">Tempo <b id="hTempo">0</b></span>
+  <span class="h5">Vidas <b id="hVidas">♥♥♥</b></span>
+</div>
+<div class="card">
+  <div class="cwrap">
+    <canvas id="cv" width="960" height="600"></canvas>
+    <div class="ov" id="ov"><h2>Carregando...</h2></div>
+  </div>
+  <div class="pad" id="pad">
+    <div class="grp">
+      <span class="sp"></span><button data-k="up" aria-label="Cima"><svg viewBox="0 0 24 24"><path d="M4 15l8-8 8 8" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button><span class="sp"></span>
+      <button data-k="left" aria-label="Esquerda"><svg viewBox="0 0 24 24"><path d="M15 4 7 12l8 8" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+      <button data-k="down" aria-label="Baixo"><svg viewBox="0 0 24 24"><path d="M4 9l8 8 8-8" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+      <button data-k="right" aria-label="Direita"><svg viewBox="0 0 24 24"><path d="M9 4l8 8-8 8" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
     </div>
-    <button class="btn btn-primary" id="btnStart">▶ Jogar</button>
-    <button class="btn btn-secondary" id="btnRanking">🏆 Ver Ranking</button>
-    <button class="btn btn-ghost" id="btnHowTo">❓ Como Jogar</button>
-  </div>
-
-  <div id="rankingScreen" class="screen hidden">
-    <div class="logo">🏆 Ranking</div>
-    <p class="subtitle">Top 10 melhores defensores do Pantanal</p>
-    <div class="panel"><ol class="ranking-list" id="rankingList"></ol></div>
-    <button class="btn btn-ghost" id="btnRankingBack">← Voltar</button>
-    <button class="btn btn-ghost" id="btnClearRanking" style="font-size:14px;padding:10px;">Limpar Ranking</button>
-  </div>
-
-  <div id="howToScreen" class="screen hidden">
-    <div class="logo">❓ Como Jogar</div>
-    <div class="panel" style="text-align:left; line-height:1.7;">
-      <p><strong>🎯 Objetivo:</strong> apague o máximo de focos de incêndio 🔥</p><br>
-      <p><strong>🎮 Controles:</strong> use os botões de seta, teclado (WASD/setas) ou deslize o dedo na tela.</p><br>
-      <p><strong>⏱️ Fase 1 (30s):</strong> apague todas as chamas e fuja do fogo gigante 🔥 que te persegue!</p><br>
-      <p><strong>🦌 Resgate animais:</strong> toque em onças, veados, capivaras e jacarés para salvá-los do incêndio (+3 pontos cada).</p><br>
-      <p><strong>🌋 Apocalipse:</strong> ondas infinitas, cada vez mais rápidas e com mais fogo. Sobreviva o máximo possível!</p><br>
-      <p><strong>💡 Dica:</strong> os animais fogem do fogo. Salve-os antes que sejam alcançados!</p>
+    <div class="grp act">
+      <button data-k="ace">ACEIRO</button>
+      <button data-k="jato">JATO</button>
     </div>
-    <button class="btn btn-primary" id="btnHowToBack">Entendi!</button>
   </div>
+  <p class="keys">Andar <kbd>←</kbd> <kbd>↑</kbd> <kbd>→</kbd> <kbd>↓</kbd> · Jato de água <kbd>Espaço</kbd> ou <kbd>J</kbd> · Abrir aceiro (segure) <kbd>K</kbd> · Pausa <kbd>P</kbd></p>
+</div>
+<div class="ranking">
+  <h3>Ranking Global</h3>
+  <ol id="rankList"><li><span>Carregando o ranking...</span></li></ol>
+  <p class="note" id="rankNote"></p>
+</div>
+<footer>
+  A Política Nacional de Manejo Integrado do Fogo foi criada pela <a href="https://www.planalto.gov.br/ccivil_03/_ato2023-2026/2024/lei/l14944.htm" target="_blank" rel="noopener">Lei nº 14.944/2024</a>.
+  O modelo de espalhamento do fogo deste jogo é simplificado e serve para ensinar o efeito do vento, do tipo de vegetação e do aceiro.<br>
+  Em caso de incêndio, ligue 193 para o Corpo de Bombeiros. Combate ao fogo é trabalho de brigadas treinadas e equipadas.<br>
+  <span class="credit">Idealizado por Ernandes Sobreira</span>
+</footer>
 
-  <div id="gameOverScreen" class="screen hidden">
-    <div class="logo" id="gameOverTitle">Fim de Jogo</div>
-    <div id="newRecordMsg" class="new-record hidden">🎉 NOVO RECORDE! 🎉</div>
-    <div class="panel">
-      <div class="game-over-label">Sua pontuação</div>
-      <div class="game-over-score" id="finalScore">0</div>
-      <div class="game-over-label" id="rankPosition"></div>
-    </div>
-    <button class="btn btn-primary" id="btnPlayAgain">🔄 Jogar Novamente</button>
-    <button class="btn btn-secondary" id="btnShareScore">📤 Compartilhar</button>
-    <button class="btn btn-ghost" id="btnGoRanking">🏆 Ver Ranking</button>
-    <button class="btn btn-ghost" id="btnGoHome">🏠 Menu</button>
-  </div>
+<script>
+const $=id=>document.getElementById(id);
+const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+const W=960,H=600,CS=40,CO=24,RO=15;
+const cv=$('cv'),ctx=cv.getContext('2d');
+/* tipos: 0 campo, 1 mata, 2 água, 3 aceiro, 4 sede, 5 ninhal */
+const TIPO={campo:0,mata:1,agua:2,aceiro:3,sede:4,ninho:5};
+const QUEIMA={0:4,1:8,4:6,5:6};          // segundos queimando
+const PROPAGA={0:.13,1:.055,4:.08,5:.08};       // chance por segundo para cada vizinho
+const ACEIRO_T={0:.45,1:1.1};                // segundos para raspar
+const TANQUE=20;
+const DIRS=[[1,0],[0,1],[-1,0],[0,-1]];
+const NOMEDIR=a=>['leste','sudeste','sul','sudoeste','oeste','noroeste','norte','nordeste'][Math.round(((a%360)+360)%360/45)%8];
 
-  <div id="hud">
-    <div class="hud-card"><div class="hud-label">Fase</div><div class="hud-value" id="phaseLabel">1</div></div>
-    <div class="hud-card"><div class="hud-label">Chamas</div><div class="hud-value" id="scoreLabel">0</div></div>
-    <div class="hud-card"><div class="hud-label">Tempo</div><div class="hud-value" id="timeLabel">30</div></div>
-  </div>
+const FASES=[
+  {nome:'Campo seco',tempo:60,limite:25,vento:[[0,0,.4]],ign:[[1,2,7]],
+    agua:[[10,11,4,3]],mataN:3,alvos:[['sede',17,6]],ini:[15,8],seed:11,
+    info:'<b>Bomba costal.</b> É a mochila de água que o brigadista leva nas costas, com tanque de cerca de 20 litros. Cada jato gasta 1 litro. Quando a água acabar, volte à lagoa para encher de novo.'},
+  {nome:'Vento forte',tempo:70,limite:22,vento:[[0,0,1.1]],ign:[[1,2,4],[10,1,11]],
+    agua:[[9,6,2,4],[20,7,3,2]],mataN:4,alvos:[['sede',18,3],['ninho',18,11]],ini:[15,7],seed:23,
+    info:'<b>Vento.</b> O vento empurra as chamas e o fogo corre muito mais rápido na direção em que ele sopra. Fique do lado de onde o vento vem e ataque a frente do fogo pelos lados.'},
+  {nome:'Aceiro na mata ciliar',tempo:80,limite:22,vento:[[0,90,.9],[40,0,1]],ign:[[1,4,1],[8,19,1],[25,22,13]],
+    agua:[[0,8,9,1],[8,8,1,4],[8,11,9,1]],mataN:7,alvos:[['ninho',11,12],['sede',3,12]],ini:[10,10],seed:37,
+    info:'<b>Aceiro.</b> É uma faixa onde a vegetação é retirada até o chão. Sem nada para queimar, o fogo para ali. Segure <b>K</b> ou o botão ACEIRO para raspar a célula à sua frente.<br>O vento vai mudar de direção no meio da fase.'},
+  {nome:'Seca extrema',tempo:80,limite:20,vento:[[0,180,1.1]],ign:[[1,22,4],[12,22,11],[30,20,1]],
+    agua:[[11,7,2,1]],mataN:5,alvos:[['sede',4,7],['ninho',6,12]],ini:[7,8],seed:51,
+    info:'<b>Seca.</b> Na seca de 2024, a régua do rio Paraguai em Ladário chegou a −69 cm em outubro. Com pouca água no campo, cada litro da bomba costal vale muito.<br>Nesta fase só há uma poça pequena.'},
+  {nome:'O grande incêndio',tempo:90,limite:28,vento:[[0,0,1.2],[30,90,1.2],[60,200,1.3]],ign:[[1,1,7],[10,12,1],[24,12,13],[42,22,7],[60,1,13]],
+    agua:[[3,3,3,2],[18,10,3,2],[10,13,2,1]],mataN:8,alvos:[['sede',11,6],['ninho',13,9]],ini:[12,8],seed:73,
+    info:'<b>Manejo integrado do fogo.</b> A Lei nº 14.944/2024 criou a Política Nacional de Manejo Integrado do Fogo, que junta prevenção, brigadas e uso planejado do fogo.<br>Nesta fase o vento gira duas vezes e surgem cinco focos.'}
+];
 
-  <div id="gameArea"></div>
+const IMG={};
+function load(n){return new Promise(ok=>{const i=new Image();i.onload=()=>{IMG[n]=i;ok();};i.onerror=()=>ok();i.src='assets/'+n+'.webp';});}
 
-  <div id="controls">
-    <button class="ctrl empty"></button>
-    <button class="ctrl" data-dir="up">⬆️</button>
-    <button class="ctrl empty"></button>
-    <button class="ctrl" data-dir="left">⬅️</button>
-    <button class="ctrl" data-dir="down">⬇️</button>
-    <button class="ctrl" data-dir="right">➡️</button>
-  </div>
+/* ───── entrada ───── */
+const held={left:0,right:0,up:0,down:0,jato:0,ace:0},edge={};
+function press(k){if(!held[k])edge[k]=1;held[k]=1;}
+function release(k){held[k]=0;}
+const KM={ArrowLeft:'left',KeyA:'left',ArrowRight:'right',KeyD:'right',ArrowUp:'up',KeyW:'up',ArrowDown:'down',KeyS:'down',Space:'jato',KeyJ:'jato',KeyK:'ace',KeyL:'ace'};
+addEventListener('keydown',e=>{if(e.target.tagName==='INPUT')return;if(e.code==='KeyP'){pausa();return;}const k=KM[e.code];if(!k)return;e.preventDefault();press(k);});
+addEventListener('keyup',e=>{const k=KM[e.code];if(k)release(k);});
+document.querySelectorAll('#pad button').forEach(b=>{const k=b.dataset.k;
+  b.addEventListener('pointerdown',e=>{e.preventDefault();b.classList.add('on');press(k);});
+  ['pointerup','pointercancel','pointerleave'].forEach(t=>b.addEventListener(t,e=>{e.preventDefault();b.classList.remove('on');release(k);}));
+  b.addEventListener('contextmenu',e=>e.preventDefault());});
+addEventListener('blur',()=>{for(const k in held)held[k]=0;});
 
-  <script>
-  (() => {
-    'use strict';
-    const RANKING_KEY = 'aguaVsFogo.ranking.v1';
-    const NAME_KEY = 'aguaVsFogo.name';
-    const MAX_RANK = 10;
-    const ANIMAL_EMOJIS = ['🦌', '🐆', '🦆', '🐊', '🦔', '🦝'];
+let somOn=true,AC=null;
+function som(f1,f2,d,v,tp){if(!somOn)return;try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();const n=AC.currentTime,o=AC.createOscillator(),g=AC.createGain();o.type=tp||'triangle';o.connect(g);g.connect(AC.destination);
+  o.frequency.setValueAtTime(f1,n);o.frequency.exponentialRampToValueAtTime(f2,n+d);g.gain.setValueAtTime(v||.08,n);g.gain.exponentialRampToValueAtTime(.001,n+d);o.start(n);o.stop(n+d+.02);}catch(e){}}
+$('bSom').onclick=()=>{somOn=!somOn;$('bSom').textContent='Som: '+(somOn?'ligado':'desligado');};
 
-    const state = {
-      playerName: '', phase: 1, wave: 1, score: 0, timeLeft: 30, running: false,
-      player: { x: 50, y: 50, r: 4, el: null },
-      fires: [], chasers: [], animals: [],
-      held: { up: false, down: false, left: false, right: false },
-      gameTimer: null, raf: null, lastTick: 0, audioCtx: null, transitioning: false,
-    };
+/* ───── estado ───── */
+let mode='menu',fase=0,pts=0,ptsFase=0,vidas=3,tempo=0,t=0,G=[],P=null,agua=TANQUE,vento={a:0,s:0},ventoIdx=0,ignIdx=0,parts=[],texts=[],jatos=[],frame=0,salvo=false,queimaveis=1,alvosPerdidos=0;
+let stat={apagados:0,aceiros:0,perdas:0,desperdicio:0};
 
-    const $ = id => document.getElementById(id);
-    const gameArea = $('gameArea');
-    const phaseLabel = $('phaseLabel');
-    const scoreLabel = $('scoreLabel');
-    const timeLabel = $('timeLabel');
+function rng(seed){let s=seed;return()=>{s=(s*16807)%2147483647;return (s-1)/2147483646;};}
+function cel(x,y){return x>=0&&y>=0&&x<CO&&y<RO?G[y*CO+x]:null;}
+function gerarMapa(F){
+  const r=rng(F.seed);G=[];
+  for(let y=0;y<RO;y++)for(let x=0;x<CO;x++)G.push({x,y,tipo:0,st:0,tq:0,mol:0,ac:0,v:r()});
+  for(let i=0;i<F.mataN;i++){const cx=2+r()*(CO-4),cy=1+r()*(RO-2),rr=1.4+r()*2.2;
+    for(const c of G){if(Math.hypot(c.x-cx,(c.y-cy)*1.2)<rr)c.tipo=1;}}
+  for(const [x,y,w,h] of F.agua)for(let j=y;j<y+h;j++)for(let i=x;i<x+w;i++){const c=cel(i,j);if(c)c.tipo=2;}
+  for(const [tp,x,y] of F.alvos){const w=2,h=tp==='sede'?2:1;for(let j=y;j<y+h;j++)for(let i=x;i<x+w;i++){const c=cel(i,j);if(c){c.tipo=TIPO[tp];c.alvo=tp;}}
+    // gramado limpo em volta da sede não existe: o jogador decide onde abrir aceiro
+  }
+  queimaveis=G.filter(c=>c.tipo!==2).length;
+}
+function updHud(){
+  $('hPts').textContent=pts.toLocaleString('pt-BR');$('hFase').textContent=(fase+1)+'/5';
+  $('hAgua').textContent=Math.floor(agua)+' L';$('hTempo').textContent=Math.ceil(tempo);
+  $('hQ').textContent=pctQueimado()+'%';$('hLim').textContent='/'+FASES[fase].limite+'%';
+  $('hVidas').textContent='♥'.repeat(Math.max(0,vidas))+'♡'.repeat(Math.max(0,3-vidas));
+}
+function pctQueimado(){let n=0;for(const c of G)if(c.st===1||c.st===2)n++;return Math.round(100*n/queimaveis);}
+function txt(x,y,s,c,sz){texts.push({x,y,s,c,t:0,sz:sz||18});}
+function addPts(v,x,y){pts=Math.max(0,pts+v);ptsFase+=v;if(v<0)stat.perdas+=-v;txt(x,y,(v>0?'+':'−')+Math.abs(v),v>0?'#16a34a':'#dc2626',19);}
 
-    function beep(freq, dur = 0.1, type = 'sine', vol = 0.15) {
-      try {
-        if (!state.audioCtx) state.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        const ctx = state.audioCtx;
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.type = type;
-        osc.frequency.value = freq;
-        gain.gain.value = vol;
-        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + dur);
-        osc.connect(gain).connect(ctx.destination);
-        osc.start();
-        osc.stop(ctx.currentTime + dur);
-      } catch (e) {}
+function iniciarFase(){
+  const F=FASES[fase];gerarMapa(F);
+  P={x:F.ini[0]*CS+CS/2,y:F.ini[1]*CS+CS/2,d:0,inv:0,cd:0,aceT:0};
+  const c0=cel(F.ini[0],F.ini[1]);if(c0&&c0.tipo!==2){c0.tipo=0;}
+  agua=TANQUE;vidas=3;tempo=F.tempo;t=0;ventoIdx=0;ignIdx=0;vento={a:F.vento[0][1],s:F.vento[0][2]};
+  parts=[];texts=[];jatos=[];alvosPerdidos=0;ptsFase=0;stat={apagados:0,aceiros:0,perdas:0,desperdicio:0};
+  mode='jogo';hidePanel();updHud();
+}
+function acender(x,y){
+  let best=null,d=1e9;for(const c of G){if(c.st!==0||c.tipo===2||c.tipo===3||c.alvo)continue;const dd=Math.hypot(c.x-x,c.y-y);if(dd<d){d=dd;best=c;}}
+  if(best){best.st=1;best.tq=0;if(fase>0)for(const [dx,dy] of DIRS){const n=cel(best.x+dx,best.y+dy);if(n&&n.st===0&&(n.tipo===0||n.tipo===1)&&(fase>1||Math.random()<.5)){n.st=1;n.tq=Math.random();}}txt(best.x*CS+20,best.y*CS-4,'Novo foco!','#c2410c',16);som(160,90,.4,.08,'sawtooth');}
+}
+function celJogador(){return cel(Math.floor(P.x/CS),Math.floor(P.y/CS));}
+
+/* ───── atualização ───── */
+function update(){
+  frame++;const dt=1/60;
+  for(const p of parts){p.t++;p.x+=p.vx;p.y+=p.vy;p.vy+=p.g||0;} parts=parts.filter(p=>p.t<(p.life||30));
+  for(const s of texts){s.t++;s.y-=.6;} texts=texts.filter(s=>s.t<70);
+  for(const j of jatos)j.t++; jatos=jatos.filter(j=>j.t<12);
+  if(mode!=='jogo'){for(const k in edge)edge[k]=0;return;}
+  const F=FASES[fase];
+  t+=dt;tempo-=dt;
+  while(ignIdx<F.ign.length&&t>=F.ign[ignIdx][0]){acender(F.ign[ignIdx][1],F.ign[ignIdx][2]);ignIdx++;}
+  if(ventoIdx+1<F.vento.length&&t>=F.vento[ventoIdx+1][0]){ventoIdx++;vento={a:F.vento[ventoIdx][1],s:F.vento[ventoIdx][2]};
+    txt(W/2,70,'O vento mudou: agora sopra para '+NOMEDIR(vento.a),'#075985',20);som(300,600,.3,.06);}
+  // jogador
+  let mx=0,my=0;if(held.left)mx--;if(held.right)mx++;if(held.up)my--;if(held.down)my++;
+  if(mx||my){if(Math.abs(mx)>=Math.abs(my))P.d=mx>0?0:2;else P.d=my>0?1:3;}
+  const cj=celJogador();let sp=3.1;if(cj&&cj.tipo===1&&cj.st===0)sp*=.72;if(cj&&cj.tipo===2)sp*=.6;
+  if(held.ace)sp=0;
+  const l=Math.hypot(mx,my)||1;P.x=Math.max(14,Math.min(W-14,P.x+mx/l*sp));P.y=Math.max(14,Math.min(H-14,P.y+my/l*sp));
+  if(P.inv>0)P.inv--;if(P.cd>0)P.cd--;
+  const cA=celJogador();
+  if(cA&&cA.tipo===2&&agua<TANQUE){agua=Math.min(TANQUE,agua+8*dt);if(frame%20===0)parts.push({x:P.x,y:P.y-10,vx:(Math.random()-.5),vy:-1,t:0,c:'#38bdf8',r:3,life:20});}
+  // jato
+  if(held.jato&&P.cd<=0){
+    P.cd=12;
+    if(agua<1){if(edge.jato){txt(P.x,P.y-36,'Tanque vazio: volte à água','#b45309',15);som(150,120,.1,.05,'square');}}
+    else{
+      agua-=1;som(900,400,.12,.05,'sine');
+      const [dx,dy]=DIRS[P.d],cx=Math.floor(P.x/CS),cy=Math.floor(P.y/CS);let acertou=0,util=0;
+      for(let k=1;k<=3;k++){const c=cel(cx+dx*k,cy+dy*k);if(!c)break;
+        if(c.st===1){c.st=c.tq>1.2?2:0;c.mol=10;c.tq=0;acertou++;util++;stat.apagados++;
+          for(let i=0;i<6;i++)parts.push({x:c.x*CS+20,y:c.y*CS+20,vx:(Math.random()-.5)*2,vy:-1-Math.random(),t:0,c:'rgba(148,163,184,.6)',r:7,life:34});}
+        else if(c.st===0&&c.tipo!==2&&c.tipo!==3){c.mol=10;util++;}}
+      jatos.push({x:P.x,y:P.y,dx,dy,t:0});
+      if(acertou)addPts(5*acertou,P.x+dx*60,P.y+dy*60-20);
+      else if(!util){stat.desperdicio++;addPts(-2,P.x+dx*60,P.y+dy*60-20);txt(P.x,P.y-50,'Jato desperdiçado','#b45309',14);}
     }
+  }
+  // aceiro
+  if(held.ace){
+    const [dx,dy]=DIRS[P.d],c=cel(Math.floor(P.x/CS)+dx,Math.floor(P.y/CS)+dy);
+    if(c&&c.st===0&&(c.tipo===0||c.tipo===1)){c.ac+=dt;P.aceT=c.ac/ACEIRO_T[c.tipo];
+      if(frame%6===0)parts.push({x:c.x*CS+20,y:c.y*CS+26,vx:(Math.random()-.5)*2,vy:-1.5,t:0,c:'#a16207',r:3,life:18,g:.12});
+      if(c.ac>=ACEIRO_T[c.tipo]){c.tipo=3;c.ac=0;P.aceT=0;stat.aceiros++;som(240,180,.1,.05,'square');}}
+    else P.aceT=0;
+  }else P.aceT=0;
+  // fogo
+  const novos=[];
+  const wx=Math.cos(vento.a*Math.PI/180),wy=Math.sin(vento.a*Math.PI/180);
+  for(const c of G){
+    if(c.mol>0){c.mol-=dt;if(c.mol<0)c.mol=0;}
+    if(c.st!==1)continue;
+    c.tq+=dt;
+    for(let oy=-1;oy<=1;oy++)for(let ox=-1;ox<=1;ox++){if(!ox&&!oy)continue;
+      const n=cel(c.x+ox,c.y+oy);if(!n||n.st!==0||n.mol>0||!(n.tipo in PROPAGA))continue;
+      const dl=Math.hypot(ox,oy),fv=Math.max(.08,1+vento.s*1.7*(ox*wx+oy*wy)/dl);
+      const p=PROPAGA[n.tipo]*fv*(dl>1?.45:1)*dt;
+      if(Math.random()<p)novos.push(n);}
+    if(c.tq>=QUEIMA[c.tipo]){c.st=2;if(c.alvo)perderAlvo(c);}
+  }
+  for(const n of novos){if(n.st===0){n.st=1;n.tq=0;if(n.alvo)perderAlvo(n);}}
+  // dano
+  const cd=celJogador();
+  if(cd&&cd.st===1&&P.inv<=0){vidas--;P.inv=90;addPts(-15,P.x,P.y-40);som(200,90,.3,.12,'square');
+    const [dx,dy]=DIRS[(P.d+2)%4];P.x+=dx*30;P.y+=dy*30;if(vidas<=0){fimFase('vidas');return;}}
+  if(alvosPerdidos){fimFase('alvo');return;}
+  const ativos=G.some(c=>c.st===1);
+  if(!ativos&&ignIdx>=F.ign.length&&t>3){fimFase('controlado');return;}
+  if(tempo<=0){tempo=0;fimFase('tempo');return;}
+  for(const k in edge)edge[k]=0;
+  if(frame%10===0)updHud();
+}
+function perderAlvo(c){
+  if(alvosPerdidos)return;alvosPerdidos=1;
+  addPts(-100,c.x*CS+20,c.y*CS-10);txt(c.x*CS+20,c.y*CS-36,c.alvo==='sede'?'A sede pegou fogo!':'O ninhal pegou fogo!','#dc2626',18);som(220,60,.6,.12,'sawtooth');
+}
+function fimFase(motivo){
+  if(mode!=='jogo')return;
+  mode='entre';
+  const F=FASES[fase],q=pctQueimado(),okQ=q<=F.limite;
+  const ok=(motivo==='controlado'||motivo==='tempo')&&okQ;
+  let bonus=0;
+  if(ok){bonus=(F.limite-q)*10+vidas*20+Math.round(tempo)*3+F.alvos.length*50;pts+=bonus;}
+  updHud();
+  const det=`<div class="tally"><span>Área queimada: ${q}% (limite ${F.limite}%)</span><span>Focos apagados: ${stat.apagados}</span><span>Aceiros: ${stat.aceiros}</span>${bonus?`<span>Bônus da fase: +${bonus}</span>`:''}<span class="neg">Perdas: −${stat.perdas}</span></div>`;
+  if(ok&&fase===FASES.length-1){mode='fim';fimJogo(true,det);return;}
+  if(ok){
+    panel(`<h2>Fase ${fase+1} concluída: ${F.nome}</h2><p>${motivo==='controlado'?'Fogo controlado antes do fim do tempo.':'Você segurou o fogo até o fim do turno.'}</p>${det}
+      <div class="info">${FASES[fase+1].info}</div>
+      <p class="small">Meta da próxima fase: proteger ${alvosTxt(FASES[fase+1])} e manter a área queimada até ${FASES[fase+1].limite}%.</p>
+      <button class="btn" id="bN">Começar a fase ${fase+2}</button>`);
+    $('bN').onclick=()=>{fase++;iniciarFase();};
+  }else{
+    const msg={vidas:'Você se queimou demais e precisou recuar',alvo:'O fogo atingiu '+(F.alvos.length>1?'um alvo protegido':alvosTxt(F)),tempo:'Fogo fora de controle',controlado:'Fogo fora de controle'}[motivo];
+    panel(`<h2>${msg}</h2><p>${motivo==='tempo'||motivo==='controlado'?'A área queimada passou do limite de '+F.limite+'%.':'Meta: proteger '+alvosTxt(F)+' e manter a área queimada até '+F.limite+'%.'}</p>${det}
+      <div class="row"><button class="btn" id="bR">Repetir a fase</button><button class="btn ghost" id="bF">Encerrar e salvar</button></div>`);
+    $('bR').onclick=()=>{pts=Math.max(0,pts-ptsFase);iniciarFase();};
+    $('bF').onclick=()=>{mode='fim';fimJogo(false,det);};
+  }
+}
+function alvosTxt(F){return F.alvos.map(a=>a[0]==='sede'?'a sede':'o ninhal').join(' e ');}
+function fimJogo(venceu,det){
+  panel(`<h2>${venceu?'Pantanal protegido, brigadista!':'Fim do turno'}</h2>
+    <p>${venceu?'Você completou as cinco fases.':'Você chegou até a fase '+(fase+1)+' de 5.'} Pontuação final: <b>${pts.toLocaleString('pt-BR')}</b>.</p>
+    <div class="savebox"><input id="pName" maxlength="20" placeholder="Seu nome"><button class="btn" id="bS">Salvar no ranking</button></div>
+    <p class="small" id="sSt"></p><button class="btn ghost" id="bM">Jogar de novo</button>`);
+  salvo=false;$('bS').onclick=()=>salvar(venceu);$('bM').onclick=telaInicio;
+}
+function panel(h){const o=$('ov');o.innerHTML=h;o.hidden=false;o.scrollTop=0;}
+function hidePanel(){$('ov').hidden=true;}
+function telaInicio(){
+  mode='menu';fase=0;pts=0;vidas=3;gerarMapa(FASES[0]);P=null;updHud();
+  panel(`<h2>💧 Água vs Fogo 🔥</h2>
+    <p>O fogo avança pelo campo. Use o <b>jato</b> da bomba costal para apagar as chamas, abra <b>aceiros</b> para cortar o caminho do fogo e reabasteça na água.</p>
+    <div class="info"><b>Pontos:</b> cada chama apagada soma 5. Ao fechar a fase, a área que sobrou, as vidas e o tempo viram bônus.<br>
+    <b>Erros tiram pontos:</b> pisar no fogo tira uma vida e 15 pontos, jato que não atinge nada útil tira 2 e fogo na sede ou no ninhal tira 100 e encerra a fase.<br>
+    <b>Meta:</b> proteger os alvos e manter a área queimada abaixo do limite da fase.</div>
+    <div class="info">${FASES[0].info}</div>
+    <button class="btn" id="bGo">Começar</button>`);
+  $('bGo').onclick=()=>{fase=0;pts=0;iniciarFase();};
+}
+function pausa(){if(mode==='jogo'){mode='pausa';$('bPausa').textContent='Continuar';panel('<h2>Pausa</h2><button class="btn" id="bC">Continuar</button>');$('bC').onclick=pausa;}
+  else if(mode==='pausa'){mode='jogo';$('bPausa').textContent='Pausar';hidePanel();}}
+$('bPausa').onclick=pausa;
+document.addEventListener('visibilitychange',()=>{if(document.hidden&&mode==='jogo')pausa();});
 
-    const rand = (min, max) => Math.random() * (max - min) + min;
-    const dist2 = (a, b) => (a.x - b.x) ** 2 + (a.y - b.y) ** 2;
+/* ───── desenho ───── */
+const COR={0:['#e8efb4','#dbe59a'],1:['#86c46a','#6fb354'],2:['#8fd3f5','#7cc7f0'],3:['#e3c99d','#d9bb8a'],4:['#e8efb4','#dbe59a'],5:['#86c46a','#6fb354']};
+function chama(x,y,k,tt){
+  const h=(26+Math.sin(tt*9+x)*4)*k;ctx.save();ctx.translate(x,y);
+  [['#dc2626',1],['#f97316',.75],['#facc15',.45]].forEach(([c,m],i)=>{ctx.fillStyle=c;ctx.beginPath();const w=h*.4*m,hh=h*m,sw=Math.sin(tt*8+i+x)*3;
+    ctx.moveTo(-w,0);ctx.quadraticCurveTo(-w*1.1,-hh*.5,sw,-hh);ctx.quadraticCurveTo(w*1.1,-hh*.5,w,0);ctx.closePath();ctx.fill();});ctx.restore();
+}
+function draw(){
+  const tt=frame/60;
+  for(const c of G){
+    const x=c.x*CS,y=c.y*CS;let cor=COR[c.tipo][(c.x+c.y)%2];
+    if(c.st===2)cor=(c.x+c.y)%2?'#8a8079':'#7d736c';
+    ctx.fillStyle=cor;ctx.fillRect(x,y,CS,CS);
+    if(c.st!==2){
+      if(c.tipo===0||c.tipo===4){ctx.strokeStyle='#b9c972';ctx.lineWidth=1.5;for(let i=0;i<3;i++){const gx=x+8+((c.v*97+i*13)%26),gy=y+30-((c.v*53+i*7)%14);ctx.beginPath();ctx.moveTo(gx,gy);ctx.lineTo(gx-2,gy-7);ctx.moveTo(gx,gy);ctx.lineTo(gx+3,gy-6);ctx.stroke();}}
+      if(c.tipo===1||c.tipo===5){ctx.fillStyle='#3f8a33';ctx.beginPath();ctx.arc(x+13+c.v*8,y+16,9,0,7);ctx.arc(x+27-c.v*6,y+24,10,0,7);ctx.fill();ctx.fillStyle='#55a345';ctx.beginPath();ctx.arc(x+12+c.v*8,y+14,5,0,7);ctx.fill();}
+      if(c.tipo===2){ctx.strokeStyle='rgba(255,255,255,.6)';ctx.lineWidth=1.5;ctx.beginPath();const o=Math.sin(tt*2+c.x)*3;ctx.moveTo(x+6+o,y+14);ctx.quadraticCurveTo(x+12+o,y+10,x+18+o,y+14);ctx.moveTo(x+18-o,y+28);ctx.quadraticCurveTo(x+24-o,y+24,x+30-o,y+28);ctx.stroke();}
+      if(c.tipo===3){ctx.strokeStyle='#c4a36d';ctx.lineWidth=1;for(let i=1;i<4;i++){ctx.beginPath();ctx.moveTo(x+4,y+i*10);ctx.lineTo(x+36,y+i*10);ctx.stroke();}}
+    }else{ctx.fillStyle='#5b524c';ctx.beginPath();ctx.arc(x+12+c.v*14,y+20,3,0,7);ctx.arc(x+28,y+12+c.v*16,2,0,7);ctx.fill();}
+    if(c.mol>0&&c.st===0){ctx.fillStyle=`rgba(56,189,248,${.12+.25*Math.min(1,c.mol/10)})`;ctx.fillRect(x,y,CS,CS);}
+    if(c.ac>0){ctx.fillStyle='rgba(161,98,7,.35)';ctx.fillRect(x,y+CS-6,CS*c.ac/ACEIRO_T[c.tipo],6);}
+  }
+  // alvos
+  for(const [tp,ax,ay] of (FASES[fase]||FASES[0]).alvos){
+    const x=ax*CS,y=ay*CS,perd=G.some(c=>c.alvo===tp&&c.st===2);
+    ctx.save();if(perd)ctx.globalAlpha=.45;
+    if(tp==='sede'){ctx.fillStyle='#fef3c7';ctx.fillRect(x+10,y+30,60,40);ctx.fillStyle='#b45309';ctx.beginPath();ctx.moveTo(x+2,y+32);ctx.lineTo(x+40,y+6);ctx.lineTo(x+78,y+32);ctx.closePath();ctx.fill();
+      ctx.fillStyle='#78350f';ctx.fillRect(x+34,y+48,14,22);ctx.fillStyle='#7dd3fc';ctx.fillRect(x+16,y+40,12,10);ctx.fillRect(x+54,y+40,12,10);}
+    else{ctx.fillStyle='#6b4f2a';ctx.beginPath();ctx.ellipse(x+40,y+34,30,6,0,0,7);ctx.fill();if(IMG.tuiuiu){ctx.drawImage(IMG.tuiuiu,x+6,y-16,40,48);ctx.drawImage(IMG.tuiuiu,x+38,y-10,34,41);}}
+    ctx.font='800 11px system-ui';ctx.textAlign='center';ctx.fillStyle='#fff';const lb=tp==='sede'?'SEDE':'NINHAL';const tw=ctx.measureText(lb).width+10;
+    ctx.fillStyle=perd?'#dc2626':'#0369a1';ctx.beginPath();ctx.roundRect(x+40-tw/2,y-(tp==='sede'?2:22),tw,15,7);ctx.fill();ctx.fillStyle='#fff';ctx.fillText(lb,x+40,y+(tp==='sede'?9:-11));
+    ctx.restore();
+  }
+  // chamas
+  for(const c of G)if(c.st===1){const k=.55+Math.min(1,c.tq/1.2)*.5;ctx.fillStyle='rgba(234,88,12,.22)';ctx.fillRect(c.x*CS,c.y*CS,CS,CS);chama(c.x*CS+20,c.y*CS+36,k,tt);}
+  // jatos
+  for(const j of jatos){ctx.strokeStyle=`rgba(14,165,233,${1-j.t/12})`;ctx.lineWidth=7-j.t*.4;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(j.x,j.y);ctx.lineTo(j.x+j.dx*(40+j.t*7),j.y+j.dy*(40+j.t*7));ctx.stroke();
+    for(let i=0;i<3;i++){ctx.fillStyle='rgba(56,189,248,.7)';ctx.beginPath();ctx.arc(j.x+j.dx*(30+j.t*9+i*10)+(Math.random()-.5)*8,j.y+j.dy*(30+j.t*9+i*10)+(Math.random()-.5)*8,2.5,0,7);ctx.fill();}}
+  // jogador
+  if(P&&!(P.inv>0&&(P.inv>>2)%2)){
+    const [dx,dy]=DIRS[P.d];
+    ctx.fillStyle='rgba(0,0,0,.18)';ctx.beginPath();ctx.ellipse(P.x,P.y+14,13,5,0,0,7);ctx.fill();
+    const r=IMG.resgatadora;if(r){const h=50,w=h*r.width/r.height;ctx.save();ctx.translate(P.x,P.y);if(P.d===2)ctx.scale(-1,1);ctx.drawImage(r,-w/2,-h+16,w,h);ctx.restore();}
+    ctx.fillStyle='#0369a1';ctx.beginPath();ctx.moveTo(P.x+dx*26,P.y+dy*26);ctx.lineTo(P.x+dx*18-dy*6,P.y+dy*18-dx*6);ctx.lineTo(P.x+dx*18+dy*6,P.y+dy*18+dx*6);ctx.closePath();ctx.fill();
+    // tanque
+    ctx.fillStyle='#fff';ctx.fillRect(P.x-17,P.y-44,34,6);ctx.fillStyle=agua<4?'#dc2626':'#0ea5e9';ctx.fillRect(P.x-16,P.y-43,32*agua/TANQUE,4);
+    if(P.aceT>0){ctx.fillStyle='#a16207';ctx.fillRect(P.x-17,P.y-52,34*P.aceT,4);}
+  }
+  for(const p of parts){ctx.globalAlpha=Math.max(0,1-p.t/(p.life||30));ctx.fillStyle=p.c;ctx.beginPath();ctx.arc(p.x,p.y,p.r||3,0,7);ctx.fill();}ctx.globalAlpha=1;
+  for(const s of texts){ctx.globalAlpha=Math.max(0,1-s.t/70);ctx.font=`800 ${s.sz}px system-ui`;ctx.textAlign='center';ctx.lineWidth=4;ctx.strokeStyle='#fff';ctx.strokeText(s.s,s.x,s.y);ctx.fillStyle=s.c;ctx.fillText(s.s,s.x,s.y);}ctx.globalAlpha=1;
+  if(mode==='jogo'||mode==='pausa'){
+    const F=FASES[fase];
+    ctx.fillStyle='rgba(255,255,255,.92)';ctx.beginPath();ctx.roundRect(10,8,330,30,10);ctx.fill();ctx.font='800 14px system-ui';ctx.textAlign='left';ctx.fillStyle='#0c4a6e';
+    ctx.fillText(`Fase ${fase+1} · ${F.nome} · limite ${F.limite}%`,22,28);
+    // vento
+    ctx.fillStyle='rgba(255,255,255,.92)';ctx.beginPath();ctx.roundRect(W-176,8,166,48,10);ctx.fill();
+    ctx.save();ctx.translate(W-146,32);ctx.rotate(vento.a*Math.PI/180);ctx.fillStyle='#0369a1';const L=10+vento.s*12;
+    ctx.fillRect(-L,-3,L*2-8,6);ctx.beginPath();ctx.moveTo(L+4,0);ctx.lineTo(L-10,-9);ctx.lineTo(L-10,9);ctx.closePath();ctx.fill();ctx.restore();
+    ctx.font='800 12px system-ui';ctx.fillStyle='#0c4a6e';ctx.textAlign='left';ctx.fillText('Vento para',W-116,28);ctx.fillText(NOMEDIR(vento.a)+(vento.s>1?' · forte':vento.s>.6?' · médio':' · fraco'),W-116,44);
+  }
+}
+let acc=0,last=performance.now();
+function loop(n){acc+=Math.min(100,n-last);last=n;while(acc>=1000/60){update();acc-=1000/60;}draw();requestAnimationFrame(loop);}
 
-    function makeEntity(emoji, x, y, extraClass = '') {
-      const el = document.createElement('div');
-      el.className = `entity ${extraClass}`.trim();
-      el.textContent = emoji;
-      el.style.left = x + '%';
-      el.style.top = y + '%';
-      gameArea.appendChild(el);
-      return el;
-    }
-    function placeEntity(el, x, y) { el.style.left = x + '%'; el.style.top = y + '%'; }
-    function showBanner(text, sub = '') {
-      const b = document.createElement('div');
-      b.className = 'banner';
-      b.innerHTML = `${text}${sub ? `<small>${sub}</small>` : ''}`;
-      document.body.appendChild(b);
-      setTimeout(() => b.remove(), 2000);
-    }
-    function shakeScreen() {
-      gameArea.classList.add('shake');
-      setTimeout(() => gameArea.classList.remove('shake'), 300);
-    }
+/* ───── ranking ───── */
+const firebaseConfig={apiKey:"AIzaSyCbXi3UCVl8oLleBzGb6DqWSxbZmZU2yDQ",authDomain:"jogos-ranking.firebaseapp.com",databaseURL:"https://jogos-ranking-default-rtdb.firebaseio.com",
+  projectId:"jogos-ranking",storageBucket:"jogos-ranking.firebasestorage.app",messagingSenderId:"958784915420",appId:"1:958784915420:web:4212d3ad278f02d600f119"};
+const GAME_ID="agua-vs-fogo";
+let db=null,fs=null;
+(async()=>{try{const a=await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js");const f=await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js");
+  db=f.getFirestore(a.initializeApp(firebaseConfig));fs=f;carregar();}catch(e){$('rankList').innerHTML='<li><span>Ranking indisponível sem internet.</span></li>';$('rankNote').textContent='O jogo funciona normalmente. O ranking volta quando houver conexão.';}})();
+async function carregar(){if(!db)return;try{const q=fs.query(fs.collection(db,'games',GAME_ID,'scores'),fs.orderBy('score','desc'),fs.limit(10));const sn=await fs.getDocs(q);const r=[];sn.forEach(d=>r.push(d.data()));
+  $('rankNote').textContent='Maior pontuação primeiro. Ao lado, até onde a pessoa chegou.';
+  $('rankList').innerHTML=r.length?r.map((x,i)=>`<li><span><span class="pos">${i+1}º</span>${esc(x.name||'?')}</span><span>${(Number(x.score)||0).toLocaleString('pt-BR')} pts · ${esc(x.level||'')}</span></li>`).join(''):'<li><span>Seja o primeiro do ranking!</span></li>';
+  }catch(e){$('rankList').innerHTML='<li><span>Não foi possível carregar o ranking.</span></li>';}}
+async function salvar(venceu){if(salvo)return;const nome=$('pName').value.trim(),st=$('sSt');
+  if(!nome){st.textContent='Digite seu nome primeiro.';return;}if(!db){st.textContent='Sem conexão com o ranking. O resultado não foi enviado.';return;}
+  $('bS').disabled=true;try{await fs.addDoc(fs.collection(db,'games',GAME_ID,'scores'),{name:nome.slice(0,20),score:pts,level:venceu?'Completo':'Fase '+(fase+1),ts:fs.serverTimestamp()});
+  salvo=true;st.textContent='Salvo no Ranking Global!';carregar();}catch(e){$('bS').disabled=false;st.textContent='Erro ao salvar. Tente de novo.';}}
 
-    function clearArena() {
-      gameArea.innerHTML = '';
-      state.fires = []; state.chasers = []; state.animals = [];
-    }
-    function spawnWind(count) {
-      for (let i = 0; i < count; i++) {
-        const s = document.createElement('div');
-        s.className = 'wind-smoke';
-        s.textContent = '💨';
-        s.style.setProperty('--y', rand(5, 90) + '%');
-        s.style.setProperty('--dur', rand(8, 16) + 's');
-        s.style.setProperty('--delay', (-rand(0, 16)) + 's');
-        gameArea.appendChild(s);
-      }
-    }
-    function spawnAnimal(x, y) {
-      const emoji = ANIMAL_EMOJIS[Math.floor(Math.random() * ANIMAL_EMOJIS.length)];
-      const a = { x, y, r: 3.5, vx: 0, vy: 0, speed: 0.45,
-        el: makeEntity(emoji, x, y, 'animal'), saved: false, dead: false };
-      state.animals.push(a);
-      return a;
-    }
-    function spawnPlayer() {
-      state.player.x = 10; state.player.y = 10;
-      state.player.el = makeEntity('👩‍🚒', 10, 10, 'player');
-    }
-    function spawnFire(x, y) {
-      const f = { x, y, r: 4, el: makeEntity('🔥', x, y, 'fire'), out: false };
-      state.fires.push(f); return f;
-    }
-    function spawnChaser(x, y, speed) {
-      const c = { x, y, r: 5, speed, el: makeEntity('🔥', x, y, 'chaser') };
-      state.chasers.push(c); return c;
-    }
-    function spawnTrees(n) {
-      for (let i = 0; i < n; i++) makeEntity('🌳', rand(5, 95), rand(5, 95));
-    }
-
-    function setupPhase1() {
-      clearArena();
-      gameArea.classList.remove('apocalypse');
-      spawnWind(3);
-      spawnTrees(15);
-      spawnPlayer();
-      for (let i = 0; i < 18; i++) {
-        let x, y;
-        do { x = rand(8, 95); y = rand(8, 95); } while (x < 25 && y < 25);
-        spawnFire(x, y);
-      }
-      for (let i = 0; i < 4; i++) spawnAnimal(rand(20, 90), rand(20, 90));
-      spawnChaser(90, 90, 0.4);
-      state.timeLeft = 30; state.phase = 1; state.wave = 1;
-      phaseLabel.textContent = '1';
-    }
-
-    function setupApocalypseWave(wave) {
-      clearArena();
-      gameArea.classList.add('apocalypse');
-      spawnWind(5 + Math.min(wave, 5));
-      spawnTrees(Math.max(6, 14 - wave));
-      spawnPlayer();
-      const fireCount = 15 + wave * 3;
-      const chaserCount = Math.min(1 + Math.floor(wave / 2), 6);
-      const chaserSpeed = 0.5 + wave * 0.12;
-      for (let i = 0; i < Math.min(3 + wave, 8); i++) spawnAnimal(rand(15, 90), rand(15, 90));
-      for (let i = 0; i < fireCount; i++) {
-        let x, y;
-        do { x = rand(8, 95); y = rand(8, 95); } while (x < 20 && y < 20);
-        spawnFire(x, y);
-      }
-      for (let i = 0; i < chaserCount; i++) {
-        const corner = i % 4;
-        const cx = corner === 0 || corner === 3 ? 92 : 8;
-        const cy = corner < 2 ? 92 : 8;
-        spawnChaser(cx, cy, chaserSpeed);
-      }
-      state.timeLeft = Math.min(20 + wave * 2, 40);
-      state.phase = 2; state.wave = wave;
-      phaseLabel.textContent = `2.${wave}`;
-      timeLabel.classList.remove('danger');
-    }
-
-    const SPEED = 0.7;
-    function tick() {
-      if (!state.running || state.transitioning) return;
-      const now = performance.now();
-      const dt = Math.min(50, now - state.lastTick) / 16.67;
-      state.lastTick = now;
-
-      const p = state.player;
-      const move = SPEED * dt;
-      if (state.held.up) p.y -= move;
-      if (state.held.down) p.y += move;
-      if (state.held.left) p.x -= move;
-      if (state.held.right) p.x += move;
-      p.x = Math.max(3, Math.min(97, p.x));
-      p.y = Math.max(3, Math.min(97, p.y));
-      placeEntity(p.el, p.x, p.y);
-
-      for (const f of state.fires) {
-        if (f.out) continue;
-        if (dist2(p, f) < (p.r + f.r) ** 2) {
-          f.out = true;
-          f.el.classList.add('extinguished');
-          f.el.textContent = '💧';
-          const s = document.createElement('div');
-          s.className = 'splash'; s.textContent = '💦';
-          s.style.left = f.x + '%'; s.style.top = f.y + '%';
-          gameArea.appendChild(s);
-          setTimeout(() => s.remove(), 500);
-          state.score++;
-          scoreLabel.textContent = state.score;
-          beep(800 + state.score * 5, 0.08, 'square', 0.1);
-        }
-      }
-
-      for (const a of state.animals) {
-        if (a.saved || a.dead) continue;
-        let fx = 0, fy = 0;
-        for (const f of state.fires) {
-          if (f.out) continue;
-          const dx = a.x - f.x, dy = a.y - f.y;
-          const d = Math.hypot(dx, dy);
-          if (d < 25 && d > 0.1) {
-            const w = (25 - d) / 25;
-            fx += (dx / d) * w; fy += (dy / d) * w;
-          }
-        }
-        for (const c of state.chasers) {
-          const dx = a.x - c.x, dy = a.y - c.y;
-          const d = Math.hypot(dx, dy);
-          if (d < 30 && d > 0.1) {
-            const w = (30 - d) / 30 * 1.5;
-            fx += (dx / d) * w; fy += (dy / d) * w;
-          }
-        }
-        const flen = Math.hypot(fx, fy);
-        if (flen > 0.1) {
-          a.vx = (fx / flen) * a.speed;
-          a.vy = (fy / flen) * a.speed;
-        } else {
-          a.vx *= 0.92; a.vy *= 0.92;
-          if (Math.random() < 0.02) {
-            a.vx = rand(-0.2, 0.2);
-            a.vy = rand(-0.2, 0.2);
-          }
-        }
-        a.x += a.vx * dt; a.y += a.vy * dt;
-        a.x = Math.max(3, Math.min(97, a.x));
-        a.y = Math.max(3, Math.min(97, a.y));
-        placeEntity(a.el, a.x, a.y);
-
-        for (const c of state.chasers) {
-          if (dist2(a, c) < (a.r + c.r) ** 2) {
-            a.dead = true;
-            a.el.classList.add('extinguished');
-            break;
-          }
-        }
-        if (a.dead) continue;
-
-        if (dist2(p, a) < (p.r + a.r) ** 2) {
-          a.saved = true;
-          a.el.classList.add('saved');
-          state.score += 3;
-          scoreLabel.textContent = state.score;
-          beep(1400, 0.15, 'sine', 0.18);
-          beep(1800, 0.15, 'sine', 0.15);
-          const s = document.createElement('div');
-          s.className = 'splash'; s.textContent = '💚';
-          s.style.left = a.x + '%'; s.style.top = a.y + '%';
-          gameArea.appendChild(s);
-          setTimeout(() => s.remove(), 500);
-        }
-      }
-
-      for (const c of state.chasers) {
-        const dx = p.x - c.x, dy = p.y - c.y;
-        const d = Math.hypot(dx, dy) || 1;
-        c.x += (dx / d) * c.speed * dt;
-        c.y += (dy / d) * c.speed * dt;
-        placeEntity(c.el, c.x, c.y);
-        if (dist2(p, c) < (p.r + c.r) ** 2) {
-          gameOver('💀 O fogo te pegou!');
-          return;
-        }
-      }
-
-      if (state.fires.length > 0 && state.fires.every(f => f.out)) {
-        state.transitioning = true;
-        if (state.phase === 1) {
-          beep(1200, 0.3, 'sine', 0.2);
-          showBanner('🌋 APOCALIPSE!', 'O fogo saiu de controle...');
-          shakeScreen();
-          setTimeout(() => { setupApocalypseWave(1); startTimer(); state.transitioning = false; }, 1500);
-        } else {
-          beep(1500, 0.2, 'sine', 0.2);
-          showBanner(`Onda ${state.wave + 1}!`, 'Mais fogo se aproxima...');
-          setTimeout(() => { setupApocalypseWave(state.wave + 1); startTimer(); state.transitioning = false; }, 1200);
-        }
-      }
-    }
-
-    function startTimer() {
-      clearInterval(state.gameTimer);
-      timeLabel.textContent = state.timeLeft;
-      timeLabel.classList.toggle('danger', state.timeLeft <= 5);
-      state.gameTimer = setInterval(() => {
-        if (state.transitioning) return;
-        state.timeLeft--;
-        timeLabel.textContent = state.timeLeft;
-        if (state.timeLeft <= 5) timeLabel.classList.add('danger');
-        else timeLabel.classList.remove('danger');
-        if (state.timeLeft <= 0) {
-          if (state.phase === 1) {
-            state.transitioning = true;
-            showBanner('⏰ Tempo!', 'O caos se instaura...');
-            shakeScreen();
-            setTimeout(() => { setupApocalypseWave(1); startTimer(); state.transitioning = false; }, 1500);
-          } else {
-            gameOver('⏰ O tempo acabou!');
-          }
-        }
-      }, 1000);
-    }
-
-    function startGameLoop() {
-      cancelAnimationFrame(state.raf);
-      state.lastTick = performance.now();
-      const loop = () => {
-        if (!state.running) return;
-        tick();
-        state.raf = requestAnimationFrame(loop);
-      };
-      state.raf = requestAnimationFrame(loop);
-    }
-
-    function startGame() {
-      state.score = 0;
-      state.transitioning = false;
-      scoreLabel.textContent = '0';
-      setupPhase1();
-      state.running = true;
-      hideAllScreens();
-      startTimer();
-      startGameLoop();
-    }
-
-    function gameOver(msg) {
-      if (!state.running) return;
-      state.running = false;
-      clearInterval(state.gameTimer);
-      cancelAnimationFrame(state.raf);
-      shakeScreen();
-      beep(200, 0.5, 'sawtooth', 0.2);
-      const isRecord = saveScore(state.playerName, state.score);
-      showGameOverScreen(msg, isRecord);
-    }
-
-    function loadRanking() {
-      try { return JSON.parse(localStorage.getItem(RANKING_KEY)) || []; } catch { return []; }
-    }
-    function saveRanking(list) { localStorage.setItem(RANKING_KEY, JSON.stringify(list)); }
-    function saveScore(name, score) {
-      if (score <= 0) return false;
-      const list = loadRanking();
-      const prevTopScore = list.length ? list[0].score : 0;
-      const entry = { name: name || 'Anônimo', score, date: new Date().toISOString() };
-      list.push(entry);
-      list.sort((a, b) => b.score - a.score);
-      const top = list.slice(0, MAX_RANK);
-      saveRanking(top);
-      return score > prevTopScore;
-    }
-    function getRankPosition(name, score) {
-      const list = loadRanking();
-      const pos = list.findIndex(e => e.name === name && e.score === score);
-      return pos >= 0 ? pos + 1 : -1;
-    }
-
-    function renderRanking(highlightName, highlightScore) {
-      const list = loadRanking();
-      const ul = $('rankingList');
-      if (list.length === 0) {
-        ul.innerHTML = '<li class="empty">Nenhuma pontuação ainda.<br>Seja o primeiro!</li>';
-        return;
-      }
-      let highlighted = false;
-      ul.innerHTML = list.map((e, i) => {
-        const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `${i + 1}º`;
-        const isMe = !highlighted && e.name === highlightName && e.score === highlightScore;
-        if (isMe) highlighted = true;
-        return `<li class="${isMe ? 'me' : ''}"><span class="pos">${medal}</span><span class="name">${escapeHtml(e.name)}</span><span class="score">${e.score}</span></li>`;
-      }).join('');
-    }
-    function escapeHtml(s) {
-      return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-    }
-
-    function hideAllScreens() {
-      document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
-    }
-    function showScreen(id) { hideAllScreens(); $(id).classList.remove('hidden'); }
-    function showGameOverScreen(msg, isRecord) {
-      $('gameOverTitle').textContent = msg;
-      $('finalScore').textContent = state.score;
-      $('newRecordMsg').classList.toggle('hidden', !isRecord);
-      const pos = getRankPosition(state.playerName, state.score);
-      $('rankPosition').textContent = pos > 0
-        ? `Você está em ${pos}º lugar no ranking!`
-        : (state.score > 0 ? 'Continue tentando para entrar no Top 10!' : 'Tente novamente!');
-      showScreen('gameOverScreen');
-    }
-
-    function setupControls() {
-      const setHeld = (dir, val) => { state.held[dir] = val; };
-      document.querySelectorAll('.ctrl[data-dir]').forEach(btn => {
-        const dir = btn.dataset.dir;
-        const press = e => { e.preventDefault(); setHeld(dir, true); btn.classList.add('active'); };
-        const release = e => { e.preventDefault(); setHeld(dir, false); btn.classList.remove('active'); };
-        btn.addEventListener('touchstart', press, { passive: false });
-        btn.addEventListener('touchend', release);
-        btn.addEventListener('touchcancel', release);
-        btn.addEventListener('mousedown', press);
-        btn.addEventListener('mouseup', release);
-        btn.addEventListener('mouseleave', release);
-      });
-      const keyMap = { ArrowUp: 'up', ArrowDown: 'down', ArrowLeft: 'left', ArrowRight: 'right',
-                       w: 'up', s: 'down', a: 'left', d: 'right',
-                       W: 'up', S: 'down', A: 'left', D: 'right' };
-      const isTyping = e => {
-        const t = e.target;
-        return t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable);
-      };
-      window.addEventListener('keydown', e => {
-        if (isTyping(e)) return;
-        if (keyMap[e.key]) { state.held[keyMap[e.key]] = true; e.preventDefault(); }
-      });
-      window.addEventListener('keyup', e => {
-        if (isTyping(e)) return;
-        if (keyMap[e.key]) { state.held[keyMap[e.key]] = false; }
-      });
-
-      let touchStart = null;
-      gameArea.addEventListener('touchstart', e => {
-        const t = e.touches[0];
-        touchStart = { x: t.clientX, y: t.clientY };
-      }, { passive: true });
-      gameArea.addEventListener('touchmove', e => {
-        if (!touchStart || !state.running) return;
-        const t = e.touches[0];
-        const dx = t.clientX - touchStart.x;
-        const dy = t.clientY - touchStart.y;
-        const threshold = 8;
-        state.held.left = dx < -threshold;
-        state.held.right = dx > threshold;
-        state.held.up = dy < -threshold;
-        state.held.down = dy > threshold;
-      }, { passive: true });
-      const stopSwipe = () => {
-        touchStart = null;
-        state.held = { up: false, down: false, left: false, right: false };
-      };
-      gameArea.addEventListener('touchend', stopSwipe);
-      gameArea.addEventListener('touchcancel', stopSwipe);
-    }
-
-    function shareScore() {
-      const phaseInfo = state.wave > 1 ? ` (Apocalipse onda ${state.wave})` : '';
-      const text = `🔥 Joguei "Água vs Fogo - Salve o Pantanal" e apaguei ${state.score} chamas${phaseInfo}! Consegue superar? 💧`;
-      if (navigator.share) {
-        navigator.share({ title: 'Água vs Fogo', text }).catch(() => {});
-      } else if (navigator.clipboard) {
-        navigator.clipboard.writeText(text).then(() => alert('Pontuação copiada! Cole onde quiser compartilhar.'));
-      } else {
-        prompt('Copie sua pontuação:', text);
-      }
-    }
-
-    function bindUI() {
-      const nameInput = $('playerName');
-      nameInput.value = localStorage.getItem(NAME_KEY) || '';
-      $('btnStart').addEventListener('click', () => {
-        const name = nameInput.value.trim().slice(0, 14) || 'Anônimo';
-        state.playerName = name;
-        localStorage.setItem(NAME_KEY, name);
-        startGame();
-      });
-      $('btnRanking').addEventListener('click', () => { renderRanking(); showScreen('rankingScreen'); });
-      $('btnHowTo').addEventListener('click', () => showScreen('howToScreen'));
-      $('btnHowToBack').addEventListener('click', () => showScreen('startScreen'));
-      $('btnRankingBack').addEventListener('click', () => showScreen('startScreen'));
-      $('btnClearRanking').addEventListener('click', () => {
-        if (confirm('Apagar todo o ranking?')) {
-          localStorage.removeItem(RANKING_KEY);
-          renderRanking();
-        }
-      });
-      $('btnPlayAgain').addEventListener('click', startGame);
-      $('btnShareScore').addEventListener('click', shareScore);
-      $('btnGoRanking').addEventListener('click', () => {
-        renderRanking(state.playerName, state.score);
-        showScreen('rankingScreen');
-      });
-      $('btnGoHome').addEventListener('click', () => showScreen('startScreen'));
-    }
-
-    bindUI();
-    setupControls();
-    showScreen('startScreen');
-  })();
-  </script>
+Promise.all(['resgatadora','tuiuiu'].map(load)).then(telaInicio);
+requestAnimationFrame(loop);
+window.__af={get mode(){return mode},get P(){return P},get G(){return G},get agua(){return agua},get pts(){return pts},get fase(){return fase},get t(){return t},press,release,setFase:n=>{fase=n;iniciarFase();},pct:pctQueimado};
+</script>
 </body>
 </html>
